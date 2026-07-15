@@ -6,3 +6,5 @@ __pycache__/
 data/
 *.parquet
 *.duckdb
+logs_backfill_deployment.txt
+logs/

@@ -82,4 +82,9 @@ from Phase 1 day 1) × observed turnover at that cell. Cells ranked by edge × c
 
 ## Amendment log
 
-*(empty — any post-Phase-1 change goes here with date and reason)*
+- **2026-07-15 (Phase 1, day 1):** Kalshi's category taxonomy is finer than §4 anticipated.
+  Added to deployment tier: **Elections** (Politics under another label), **Commodities**
+  (EIA/USDA-data-driven — squarely the layer-2 thesis), **Health** (CDC/govt data).
+  Explicitly left in review (not analyzed, not traded): Entertainment, Mentions, Social,
+  Education. Reason: mapping decision forced by observed category strings, made before
+  any screen was run.
