@@ -22,7 +22,7 @@ def _md_table(df: pl.DataFrame) -> list[str]:
 def run() -> str:
     df = pl.read_parquet(DATA_DIR / "markets" / "*.parquet")
     df = df.with_columns(
-        pl.col("close_time").str.to_datetime(strict=False).dt.year().alias("year")
+        pl.col("close_time").str.to_datetime(time_zone="UTC", strict=False).dt.year().alias("year")
     )
     lines = ["# Phase 1 coverage report", ""]
     lines.append(f"Total settled markets ingested: **{len(df):,}**")

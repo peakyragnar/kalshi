@@ -88,3 +88,9 @@ from Phase 1 day 1) × observed turnover at that cell. Cells ranked by edge × c
   Explicitly left in review (not analyzed, not traded): Entertainment, Mentions, Social,
   Education. Reason: mapping decision forced by observed category strings, made before
   any screen was run.
+- **2026-07-15 (Phase 1, day 1):** §5's "candle close as cross-check" is unavailable for
+  markets settled before the 2026-05-16 historical cutoff — the candlesticks endpoint
+  404s for them (probed directly). The trade tape (`/historical/trades`) covers all eras
+  and becomes the sole snapshot source; the staleness field already carries the burden
+  the cross-check was for. Candle cross-checks may still be run on post-cutoff markets
+  as a one-sided validation.

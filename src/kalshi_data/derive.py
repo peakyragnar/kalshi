@@ -1,0 +1,108 @@
+"""Build the core derived table: one row per settled market per snapshot horizon.
+
+Per phase0-assumptions.md section 5: horizons T-7/30/90/180/365d before
+expiration; each snapshot carries the last traded price at or before the
+snapshot instant, the timestamp of that trade (staleness), and cumulative
+volume; joined to settlement outcome and fee metadata.
+"""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+import polars as pl
+
+DATA_DIR = Path(__file__).resolve().parents[2] / "data"
+HORIZONS_DAYS = (7, 30, 90, 180, 365)
+
+
+def build_snapshots(markets: pl.DataFrame, trades: pl.DataFrame) -> pl.DataFrame:
+    """Pure core: markets has parsed datetime columns open_time/close_time/
+    expiration_time plus metadata; trades has ticker/created_time/
+    yes_price_cents/count with created_time parsed."""
+    markets = markets.with_columns(
+        pl.max_horizontal("expiration_time", "close_time").alias("end_time"),
+        pl.coalesce(pl.col("settled_time"), pl.col("expiration_time"), pl.col("close_time")).alias(
+            "resolve_time"
+        ),
+    )
+
+    trades = trades.sort("ticker", "created_time").with_columns(
+        pl.col("count").cum_sum().over("ticker").alias("cum_volume")
+    )
+
+    frames = []
+    for h in HORIZONS_DAYS:
+        snap = (
+            markets.with_columns(
+                (pl.col("end_time") - pl.duration(days=h)).alias("snap_ts"),
+                pl.lit(h).alias("horizon_days"),
+            )
+            .filter(pl.col("open_time") <= pl.col("snap_ts"))
+            .sort("snap_ts")
+        )
+        if len(snap) == 0:
+            continue
+        joined = snap.join_asof(
+            trades.sort("created_time").rename({"created_time": "trade_ts"}),
+            left_on="snap_ts",
+            right_on="trade_ts",
+            by="ticker",
+            strategy="backward",
+        )
+        frames.append(joined)
+
+    out = pl.concat(frames, how="vertical_relaxed")
+    return (
+        out.filter(pl.col("yes_price_cents").is_not_null())
+        .with_columns(
+            (pl.col("snap_ts") - pl.col("trade_ts")).dt.total_seconds().alias("staleness_s"),
+            (pl.col("resolve_time") - pl.col("snap_ts")).dt.total_days().alias("hold_days"),
+            (pl.col("result") == "yes").cast(pl.Int8).alias("result_yes"),
+        )
+        .select(
+            "ticker",
+            "series_ticker",
+            "event_ticker",
+            "category",
+            "tier",
+            "fee_type",
+            "fee_multiplier",
+            "horizon_days",
+            "snap_ts",
+            "yes_price_cents",
+            "trade_ts",
+            "staleness_s",
+            "cum_volume",
+            "hold_days",
+            "result",
+            "result_yes",
+            "volume",
+        )
+    )
+
+
+def run() -> None:
+    markets = (
+        pl.read_parquet(DATA_DIR / "markets" / "*.parquet")
+        .filter(pl.col("result").is_in(["yes", "no"]))
+        .with_columns(
+            pl.col("open_time").str.to_datetime(time_zone="UTC", strict=False),
+            pl.col("close_time").str.to_datetime(time_zone="UTC", strict=False),
+            pl.col("expiration_time").str.to_datetime(time_zone="UTC", strict=False),
+            pl.col("settled_time").str.to_datetime(time_zone="UTC", strict=False),
+        )
+    )
+    trades = pl.read_parquet(DATA_DIR / "trades" / "*.parquet").with_columns(
+        pl.col("created_time").str.to_datetime(time_zone="UTC", strict=False)
+    )
+    snaps = build_snapshots(markets, trades)
+    out = DATA_DIR / "derived"
+    out.mkdir(parents=True, exist_ok=True)
+    snaps.write_parquet(out / "snapshots.parquet")
+    print(f"derived: {len(snaps):,} snapshot rows -> {out / 'snapshots.parquet'}")
+    print(snaps.group_by("horizon_days").len().sort("horizon_days"))
+
+
+if __name__ == "__main__":
+    run()

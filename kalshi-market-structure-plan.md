@@ -39,9 +39,12 @@ Fix these before touching data so results can't be rationalized afterward.
 **Raw tables:**
 
 1. `markets` — ticker, event, series, category, open/close/expiration timestamps, settlement outcome, status, **the series fee schedule (maker fee yes/no and rate)**, and the rulebook's settlement source where retrievable.
-2. `trades` — price, size, timestamp, taker side, per market.
-3. `candles` — daily OHLC per market.
-4. `book_snapshots` — **live order-book recorder, started on day 1 of this phase**: top 3 levels both sides, all active markets, several times daily. The API has no historical book, so this recorder is the only source of real depth for the Phase 3 capacity estimates and for Screen C — every day it isn't running is depth data lost. It's a small script; write it before the historical backfill.
+2. `trades` — price, size, timestamp, taker side, per market. **Primary price-history
+   source for all eras** (verified 2026-07-15: candlesticks 404 for markets settled before
+   the 2026-05-16 cutoff, while `/historical/trades` serves the full pre-cutoff tape).
+   Fetched only for markets whose lifetime ≥ ~7 days — anything shorter can never
+   contribute a snapshot at the minimum T−7d horizon.
+3. `book_snapshots` — **live order-book recorder, started on day 1 of this phase**: top 3 levels both sides, all active markets, several times daily. The API has no historical book, so this recorder is the only source of real depth for the Phase 3 capacity estimates and for Screen C — every day it isn't running is depth data lost. It's a small script; write it before the historical backfill.
 
 **Core derived table** (the object every screen runs on): one row per settled market per snapshot horizon at **T−7d, T−30d, T−90d, T−180d, T−365d** before expiration, joined to the settlement outcome, category, and exact fee at that price. Per snapshot, record **three price fields**, not one: the last traded price, **the timestamp of the trade that supplied it** (staleness — on thin long-dated markets the "last trade" can be weeks old, and staleness correlates with exactly the markets the lockup thesis targets), and the daily candle close as a cross-check. Screens filter or downweight by staleness; results are reported with the staleness cut disclosed.
 
