@@ -1,5 +1,10 @@
 # Kalshi Market Structure Analysis — Work Plan
 
+**Thesis (the return stack).** Kalshi's APY (~3.5%, verified: accrues on cash and open positions) is the *floor*, not the edge — it neutralizes the time cost of capital and pays nothing for platform risk or illiquidity. On top of it, two candidate layers:
+
+1. **Structural edge** — the discount collected for being the patient, interest-earning holder in long-dated thin markets whose marginal sellers can't earn the carry, won't wait, or are biased retail flow. Exists (or not) independent of any forecast. *This plan measures it.* Entry is maker-only: in thin books the spread (5–15¢) often exceeds the edge itself, so quoting passively is the entry mechanism — inventory-seeking, not inventory-neutral; the professionals' cost structure can't follow into books that fill twice a week.
+2. **Fundamental edge** — out-forecasting the market with public data (weather, econ prints, power, govt datasets) in families where layer 1 proved the counterparties beatable. Built *after* this plan, only for surviving families, on data infrastructure largely already operated.
+
 **Objective.** Produce a calibration map of the Kalshi exchange: which market families misprice, at which horizons, in which direction, by how much — net of fees and carry. The map decides (a) whether to deploy capital at all, (b) into which two or three market families, and (c) which fundamental datasets to build afterward. No forecasting model is built during this plan; structure locates the discount before fundamentals confirm it.
 
 **Governing principle.** Every screen outputs one number — annualized net return — and is judged against a pre-committed kill threshold. If nothing survives, the project ends at Phase 3 at a cost of ~3 weeks. That outcome is a success, not a failure.
