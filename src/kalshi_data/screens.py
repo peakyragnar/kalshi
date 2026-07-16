@@ -84,6 +84,30 @@ def prepare(snapshots: pl.DataFrame, trade_counts: pl.DataFrame) -> pl.DataFrame
     )
 
 
+def cell_stats(df: pl.DataFrame, cell_cols: list[str], value: str) -> pl.DataFrame:
+    """Vectorized per-cell mean with CR0 event-clustered SE (for large frames)."""
+    g = df.group_by(cell_cols + ["event_ticker"]).agg(
+        pl.len().alias("nc"), pl.col(value).sum().alias("sc")
+    )
+    agg = g.group_by(cell_cols).agg(
+        pl.col("nc").sum().alias("n"),
+        pl.col("sc").sum().alias("s"),
+        pl.len().alias("n_events"),
+    )
+    e = g.join(agg, on=cell_cols).with_columns(
+        (pl.col("sc") - pl.col("nc") * (pl.col("s") / pl.col("n"))).alias("e")
+    )
+    se = e.group_by(cell_cols).agg(
+        ((pl.col("e") ** 2).sum().sqrt() / pl.col("n").first()).alias(f"{value}_se")
+    )
+    return (
+        agg.with_columns((pl.col("s") / pl.col("n")).alias(f"{value}_mean"))
+        .drop("s")
+        .join(se, on=cell_cols)
+        .sort(cell_cols)
+    )
+
+
 def cells(df: pl.DataFrame, group_cols: list[str]) -> pl.DataFrame:
     """Aggregate calibration + return stats per cell with clustered SEs."""
     rows = []
