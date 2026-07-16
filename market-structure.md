@@ -115,8 +115,15 @@ rates collapsing. All three are tracked automatically (below).
 
 ## Part 3 — Gates still closed before real money
 
-1. **The Phase 3 map** — cell-level qualification (7% at 2 clustered SE in both
-   periods) with capacity from recorder depth. THE go/no-go artifact.
+1. **The Phase 3 map — PASSED 2026-07-16: GO, 2 qualifying cells** (`reports/phase3_map.md`):
+   - **Politics · enter T−30d · YES 1–5¢** (rest NO at 95–99¢): discovery +30.4%/yr
+     (SE 1.6), confirmation +28.7%/yr (SE 3.5) — clears the 7%/2SE rule in both
+     periods by wide margins. ~$5.0M restable now across 617 open markets.
+   - **Financials · enter T−90d · YES 1–10¢**: +17.9% / +14.8%/yr, clears both
+     periods. ~$12.4M restable across 1,258 open markets.
+   - 15 near-misses (mostly Economics 30d mid-buckets, confirmation-positive but
+     discovery-negative per F2's favorite flip) — re-evaluate as forward data accrues.
+   - Remaining before deployment: Phase 4 memos on the two families.
 2. **Capacity estimates** — recorder has days, wants weeks. Improves automatically.
 3. **Escrowed-order carry** — one support ticket (F9).
 4. **Void charging** — void frequency by series charged into cell edges at map
@@ -134,3 +141,5 @@ rates collapsing. All three are tracked automatically (below).
 ## Change log
 - 2026-07-16: created after Screens A, B, D. Screen C production scan and the
   Phase 3 map are the open work items.
+- 2026-07-16 (later): Phase 3 map PASSED — GO with 2 qualifying cells
+  (Politics 30d 1–5¢; Financials 90d 1–10¢). Phase 4 memos are the open item.
