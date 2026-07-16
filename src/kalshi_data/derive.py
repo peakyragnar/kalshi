@@ -90,12 +90,13 @@ def run() -> None:
             pl.col("open_time").str.to_datetime(time_zone="UTC", strict=False),
             pl.col("close_time").str.to_datetime(time_zone="UTC", strict=False),
             pl.col("expiration_time").str.to_datetime(time_zone="UTC", strict=False),
-            pl.col("settled_time").str.to_datetime(time_zone="UTC", strict=False),
+            pl.col("settled_time").cast(pl.String).str.to_datetime(time_zone="UTC", strict=False),
         )
     )
-    trades = pl.read_parquet(DATA_DIR / "trades" / "*.parquet").with_columns(
-        pl.col("created_time").str.to_datetime(time_zone="UTC", strict=False)
-    )
+    trades = pl.read_parquet(
+        DATA_DIR / "trades" / "*.parquet",
+        columns=["ticker", "created_time", "yes_price_cents", "count"],
+    ).with_columns(pl.col("created_time").str.to_datetime(time_zone="UTC", strict=False))
     snaps = build_snapshots(markets, trades)
     out = DATA_DIR / "derived"
     out.mkdir(parents=True, exist_ok=True)
