@@ -9,3 +9,4 @@ data/
 logs_backfill_deployment.txt
 logs/
 logs_trades_deployment.txt
+dashboard/
