@@ -143,3 +143,9 @@ rates collapsing. All three are tracked automatically (below).
   Phase 3 map are the open work items.
 - 2026-07-16 (later): Phase 3 map PASSED — GO with 2 qualifying cells
   (Politics 30d 1–5¢; Financials 90d 1–10¢). Phase 4 memos are the open item.
+- 2026-07-16 (later still): Phase 4 memos written (`memos/`). Financials cell
+  re-qualified ex-ticket-price series (+16.8%/yr conf, bound +11.1%). Both
+  cells' single observed tail losses identified and analyzed (Trump vetoes;
+  S&P all-time-high — the latter index-correlated). Politics = primary cell,
+  Financials = secondary with index sub-cap recommendation. Open before
+  deployment: rulebook reads, regulatory status check, escrow-carry answer.
