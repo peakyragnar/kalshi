@@ -149,3 +149,8 @@ rates collapsing. All three are tracked automatically (below).
   S&P all-time-high — the latter index-correlated). Politics = primary cell,
   Financials = secondary with index sub-cap recommendation. Open before
   deployment: rulebook reads, regulatory status check, escrow-carry answer.
+- 2026-07-16: Rulebook sweep complete (`reports/rulebook-sweep.md`): 36 series
+  read, 22 GREEN / 12 YELLOW / 2 RED (KXCRYPTOSTRUCTURE, KXTARIFFCHECKS —
+  categorical/attribution judgment conditions, excluded). No discretionary
+  settlement language found anywhere. New selection rule: prefer act-conditions
+  over announcement/attribution triggers.
