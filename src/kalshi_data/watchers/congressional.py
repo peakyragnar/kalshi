@@ -28,7 +28,7 @@ import xml.etree.ElementTree as ET
 
 import httpx
 
-from ..core.paths import CANDIDATES, REPORTS
+from ..core.paths import CANDIDATES, REPORTS, TAIL_SIGNALS
 
 CAL_PDF_URL = "https://www.senate.gov/legislative/LIS/executive_calendar/xcalv.pdf"
 SESSION_XML_URL = "https://www.senate.gov/legislative/schedule/floor_schedule.xml"
@@ -81,6 +81,19 @@ def session_days_before(deadline: dt.date, days: list[dt.date]) -> int | None:
     return sum(1 for d in days if today <= d < deadline)
 
 
+def evidence(nominee: str | None, cal_text: str, sig: str) -> str:
+    """Human-readable why: the exact calendar text behind the signal."""
+    if sig == "UNKNOWN":
+        return "calendar unavailable or nominee name not extractable from the market title"
+    surname = last_name(nominee)
+    if sig == "CLEAR":
+        return f"'{surname}' does not appear anywhere in the current Executive Calendar"
+    m = re.search(rf".{{0,90}}\b{re.escape(surname)}\b.{{0,110}}", cal_text, re.DOTALL)
+    snippet = re.sub(r"\s+", " ", m.group(0)).strip() if m else surname
+    prefix = "in the CLOTURE section: " if sig == "HOT" else "on the Executive Calendar: "
+    return prefix + "…" + snippet + "…"
+
+
 def signal(nominee: str | None, cal_text: str) -> str:
     if not nominee or not cal_text:
         return "UNKNOWN"
@@ -112,18 +125,35 @@ def run() -> None:
         sess = []
 
     lines = [f"# Tail signals — {dt.date.today()}", ""]
+    records = []
+    checked = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
     for c in targets:
         nominee = extract_nominee(c["title"])
         sig = signal(nominee, cal_text)
+        ev = evidence(nominee, cal_text, sig)
         c["tail_signal"] = sig
         deadline = dt.date.today() + dt.timedelta(days=int(c["days_to_close"]))
         nsess = session_days_before(deadline, sess) if sess else None
         c["session_days_left"] = nsess
+        records.append(
+            {
+                "ticker": c["ticker"],
+                "title": c["title"],
+                "nominee": nominee,
+                "signal": sig,
+                "evidence": ev,
+                "session_days_left": nsess,
+                "checked": checked,
+                "source": CAL_PDF_URL,
+            }
+        )
         lines.append(
             f"- **{sig}** {c['ticker']} — {nominee} "
-            f"({nsess if nsess is not None else '?'} session days before deadline)"
+            f"({nsess if nsess is not None else '?'} session days before deadline)\n"
+            f"  - {ev}"
         )
     CANDIDATES.write_text(json.dumps(cands))
+    TAIL_SIGNALS.write_text(json.dumps(records, indent=1))
     (REPORTS / "tail_signals.md").write_text("\n".join(lines))
     print("\n".join(lines))
 

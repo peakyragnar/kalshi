@@ -18,8 +18,44 @@ from ..core.paths import (
     DASHBOARD as OUT,
     EDGE_HISTORY,
     LOGS,
+    RULEBOOK_VERDICTS,
     SHADOW_BOOK,
     STATE,
+    TAIL_SIGNALS,
+)
+
+STYLE = """<style>
+:root { --bg:#fcfcfb; --card:#fff; --ink:#0b0b0b; --ink2:#52514e; --mut:#898781; --line:#e1e0d9; --acc:#2a78d6; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0d0d0d; --card:#1a1a19; --ink:#fff; --ink2:#c3c2b7; --mut:#898781; --line:#2c2c2a; --acc:#3987e5; } }
+* { box-sizing:border-box; margin:0; }
+body { background:var(--bg); color:var(--ink); font:15px/1.6 -apple-system,'Segoe UI',sans-serif; padding:24px; max-width:1100px; margin:0 auto; }
+h1 { font-size:20px; font-weight:600; } h2 { font-size:15px; font-weight:600; margin:28px 0 10px; color:var(--ink); }
+.sub { color:var(--mut); font-size:13px; margin-bottom:20px; }
+.tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; }
+.tile { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 14px; }
+.tile .v { font-size:22px; font-weight:600; } .tile .l { font-size:12px; color:var(--mut); }
+table { width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--line); border-radius:10px; overflow:hidden; font-size:13px; }
+th { text-align:left; color:var(--mut); font-weight:500; padding:8px 10px; border-bottom:1px solid var(--line); }
+td { padding:7px 10px; border-bottom:1px solid var(--line); color:var(--ink2); }
+tr:last-child td { border-bottom:none; }
+.mono { font-family:ui-monospace,monospace; font-size:12px; color:var(--ink); }
+.num { text-align:right; font-variant-numeric:tabular-nums; }
+.chip { display:inline-block; font-size:11px; font-weight:600; color:var(--c); border:1px solid var(--c); border-radius:20px; padding:0 8px; }
+.cell { background:var(--card); border:1px solid var(--line); border-left:3px solid var(--acc); border-radius:0 10px 10px 0; padding:10px 14px; margin-bottom:8px; }
+.cellname { font-weight:600; } .cellstats { font-size:13px; color:var(--ink2); }
+.role { font-size:11px; color:var(--mut); font-weight:500; margin-left:6px; }
+ul { padding-left:20px; color:var(--ink2); font-size:14px; } li { margin:4px 0; }
+.who { color:var(--mut); font-size:12px; }
+.warn { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:10px 14px; color:var(--ink2); font-size:13px; margin-top:8px; }
+details summary { cursor:pointer; color:var(--mut); font-size:13px; }
+</style>"""
+
+
+NAV = (
+    "<div style='margin-bottom:12px; font-size:14px;'>"
+    "<a href='index.html' style='color:var(--acc); text-decoration:none; margin-right:16px;'>Overview</a>"
+    "<a href='signals.html' style='color:var(--acc); text-decoration:none;'>Transparency — every verdict, with reasons</a>"
+    "</div>"
 )
 
 CELLS = [
@@ -194,6 +230,50 @@ def shadow_book_html() -> str:
     return tiles + table + note
 
 
+def signals_page(style: str, now: str) -> str:
+    verdicts = json.loads(RULEBOOK_VERDICTS.read_text()) if RULEBOOK_VERDICTS.exists() else {}
+    cands = json.loads(CANDIDATES.read_text()) if CANDIDATES.exists() else []
+    tails = json.loads(TAIL_SIGNALS.read_text()) if TAIL_SIGNALS.exists() else []
+
+    tail_rows = "".join(
+        f"<tr><td class='mono'>{t['ticker']}</td><td>{t.get('nominee') or '—'}</td>"
+        f"<td>{chip(t['signal'])}</td><td>{t['evidence']}</td>"
+        f"<td class='num'>{t['checked'][:16]}</td>"
+        f"<td><a href='{t['source']}' style='color:var(--acc)'>calendar</a></td></tr>"
+        for t in tails
+    ) or "<tr><td colspan='6'>no confirmation-type candidates today</td></tr>"
+
+    cand_rows = []
+    for c in sorted(cands, key=lambda x: (x["category"], x["series"], x["ticker"])):
+        v = verdicts.get(c["series"], {})
+        reason = v.get("reason", "not yet swept — untouchable until read")
+        swept = v.get("swept", "—")
+        cand_rows.append(
+            f"<tr><td class='mono'>{c['ticker']}</td><td>{c['title'][:48]}</td>"
+            f"<td>{chip(c['rulebook'])}</td><td>{reason}</td><td class='num'>{swept}</td></tr>"
+        )
+
+    return f"""<!doctype html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kalshi structure — transparency</title>{style}</head><body>
+<h1>Transparency — every verdict, with its reason</h1>
+<div class="sub">generated {now} · nothing on the overview is asserted without a row here</div>
+{NAV}
+<h2>Tail signals — what the congressional watcher actually found</h2>
+<table><tr><th>market</th><th>nominee</th><th>signal</th><th>evidence (from the Senate Executive Calendar)</th><th>checked</th><th>source</th></tr>
+{tail_rows}</table>
+
+<h2>Rulebook verdicts — why each candidate is GREEN / YELLOW / RED</h2>
+<div class="sub">verdicts live in <span class='mono'>ops/rulebook-verdicts.json</span> (versioned); full sweep write-ups in <a href='../research/rulebook-sweep.md' style='color:var(--acc)'>research/rulebook-sweep.md</a></div>
+<table><tr><th>market</th><th>title</th><th>verdict</th><th>reason</th><th>swept</th></tr>
+{"".join(cand_rows)}</table>
+
+<div class="warn">Verdict discipline: uncertain between GREEN and YELLOW → YELLOW; any condition requiring
+interpretation of motive, attribution, or category membership → RED, always. Tail-signal evidence is the
+literal calendar text the watcher matched; CLEAR means the surname is absent from the current calendar.</div>
+</body></html>"""
+
+
 def edge_health_html() -> str:
     hist = EDGE_HISTORY
     if not hist.exists():
@@ -258,33 +338,10 @@ def run() -> Path:
     html = f"""<!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Kalshi structure — operations dashboard</title>
-<style>
-:root {{ --bg:#fcfcfb; --card:#fff; --ink:#0b0b0b; --ink2:#52514e; --mut:#898781; --line:#e1e0d9; --acc:#2a78d6; }}
-@media (prefers-color-scheme: dark) {{ :root {{ --bg:#0d0d0d; --card:#1a1a19; --ink:#fff; --ink2:#c3c2b7; --mut:#898781; --line:#2c2c2a; --acc:#3987e5; }} }}
-* {{ box-sizing:border-box; margin:0; }}
-body {{ background:var(--bg); color:var(--ink); font:15px/1.6 -apple-system,'Segoe UI',sans-serif; padding:24px; max-width:1100px; margin:0 auto; }}
-h1 {{ font-size:20px; font-weight:600; }} h2 {{ font-size:15px; font-weight:600; margin:28px 0 10px; color:var(--ink); }}
-.sub {{ color:var(--mut); font-size:13px; margin-bottom:20px; }}
-.tiles {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px; }}
-.tile {{ background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px 14px; }}
-.tile .v {{ font-size:22px; font-weight:600; }} .tile .l {{ font-size:12px; color:var(--mut); }}
-table {{ width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--line); border-radius:10px; overflow:hidden; font-size:13px; }}
-th {{ text-align:left; color:var(--mut); font-weight:500; padding:8px 10px; border-bottom:1px solid var(--line); }}
-td {{ padding:7px 10px; border-bottom:1px solid var(--line); color:var(--ink2); }}
-tr:last-child td {{ border-bottom:none; }}
-.mono {{ font-family:ui-monospace,monospace; font-size:12px; color:var(--ink); }}
-.num {{ text-align:right; font-variant-numeric:tabular-nums; }}
-.chip {{ display:inline-block; font-size:11px; font-weight:600; color:var(--c); border:1px solid var(--c); border-radius:20px; padding:0 8px; }}
-.cell {{ background:var(--card); border:1px solid var(--line); border-left:3px solid var(--acc); border-radius:0 10px 10px 0; padding:10px 14px; margin-bottom:8px; }}
-.cellname {{ font-weight:600; }} .cellstats {{ font-size:13px; color:var(--ink2); }}
-.role {{ font-size:11px; color:var(--mut); font-weight:500; margin-left:6px; }}
-ul {{ padding-left:20px; color:var(--ink2); font-size:14px; }} li {{ margin:4px 0; }}
-.who {{ color:var(--mut); font-size:12px; }}
-.warn {{ background:var(--card); border:1px solid var(--line); border-radius:10px; padding:10px 14px; color:var(--ink2); font-size:13px; margin-top:8px; }}
-details summary {{ cursor:pointer; color:var(--mut); font-size:13px; }}
-</style></head><body>
+{STYLE}</head><body>
 <h1>Kalshi market structure — operations</h1>
 <div class="sub">generated {now} · data through latest settled feed · recorder: {rec_days} · deployment status: <b>diligence phase — no live positions</b></div>
+{NAV}
 
 {alert_banner_html()}{health_strip_html()}
 
@@ -323,6 +380,7 @@ details summary {{ cursor:pointer; color:var(--mut); font-size:13px; }}
 in both periods. Tail estimates rest on 1 observed loss per cell — see memos. Recorder last run: {rec_last}</div>
 </body></html>"""
     OUT.mkdir(exist_ok=True)
+    (OUT / "signals.html").write_text(signals_page(STYLE, now))
     path = OUT / "index.html"
     path.write_text(html)
     print(f"dashboard -> {path}")

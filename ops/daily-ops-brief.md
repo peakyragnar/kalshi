@@ -15,11 +15,12 @@ Apply the seven-point read documented in research/rulebook-sweep.md (act vs
 word vs attribution triggers; named sources; deadline precision; definitional
 edges; NO-seller asymmetry). Verdict discipline: uncertain between GREEN and
 YELLOW -> YELLOW; any condition requiring interpretation of motive, attribution,
-or category membership -> RED, always. GREEN/YELLOW go into the sets in
-src/kalshi_data/operations/candidates.py; RED goes into BLACKLIST. Append each
-verdict with one-line reasoning to research/rulebook-sweep.md. Regenerate the
-rulebook field of data/state/candidates_today.json from the updated code sets,
-then run: uv run python -m kalshi_data.watchers.congressional ; uv run python
+or category membership -> RED, always. Record every verdict in
+ops/rulebook-verdicts.json as {"SERIES": {"verdict": "GREEN|YELLOW|RED",
+"reason": "<one line>", "swept": "<date>"}} — candidates.py derives its sets
+from this file, and the dashboard's Transparency page displays the reasons.
+Also append prose to research/rulebook-sweep.md. Regenerate the rulebook field
+of data/state/candidates_today.json from the updated verdicts, then run: uv run python -m kalshi_data.watchers.congressional ; uv run python
 -m kalshi_data.operations.shadow_book ; uv run python -m
 kalshi_data.operations.dashboard
 

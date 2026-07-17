@@ -1,0 +1,377 @@
+{
+ "KXA100MS": {
+  "reason": "quantitative but compute-price source unverified \u2014 upgrade candidate after source check",
+  "swept": "2026-07-17",
+  "verdict": "YELLOW"
+ },
+ "KXALITOOUT": {
+  "reason": "act: retirement from office, public record, clean deadline",
+  "swept": "2026-07-17",
+  "verdict": "GREEN"
+ },
+ "KXAPRPOTUSEOY": {
+  "reason": "quantitative: RealClearPolitics number at an exact timestamp",
+  "swept": "2026-07-16",
+  "verdict": "GREEN"
+ },
+ "KXBILLSCOUNT": {
+  "reason": "act: Library of Congress recorded vote / bill count",
+  "swept": "2026-07-16",
+  "verdict": "GREEN"
+ },
+ "KXBOEING": {
+  "reason": "quantitative: company-reported metric in official reports",
+  "swept": "2026-07-16",
+  "verdict": "GREEN"
+ },
+ "KXBULL": {
+  "reason": "quantitative: company-reported metric in official reports",
+  "swept": "2026-07-17",
+  "verdict": "GREEN"
+ },
+ "KXCBPAIRPORT": {
+  "reason": "attribution: withdrawal 'in response to' sanctuary noncooperation \u2014 motive judgment",
+  "swept": "2026-07-17",
+  "verdict": "RED"
+ },
+ "KXCBVOLUME": {
+  "reason": "quantitative: company-reported metric in official reports",
+  "swept": "2026-07-16",
+  "verdict": "GREEN"
+ },
+ "KXCOMPANYACTIONMERGER": {
+  "reason": "'officially announces a definitive, binding agreement' \u2014 well-drafted but word-triggered",
+  "swept": "2026-07-17",
+  "verdict": "YELLOW"
+ },
+ "KXCRYPTOSTRUCTURE": {
+  "reason": "categorical judgment: what counts as 'a crypto market structure bill'",
+  "swept": "2026-07-16",
+  "verdict": "RED"
+ },
+ "KXDASHORDERS": {
+  "reason": "quantitative: company-reported metric in official reports",
+  "swept": "2026-07-16",
+  "verdict": "GREEN"
+ },
+ "KXDATABRICKS": {
+  "reason": "'confirms an IPO' \u2014 word trigger; EDGAR watcher is the control",
+  "swept": "2026-07-17",
+  "verdict": "YELLOW"
+ },
+ "KXEXPELSWALWELLVOTES": {
+  "reason": "act: Library of Congress recorded vote / bill count",
+  "swept": "2026-07-16",
+  "verdict": "GREEN"
+ },
+ "KXFREDDIE": {
+  "reason": "'confirms an IPO' \u2014 word trigger; EDGAR watcher is the control",
+  "swept": "2026-07-17",
+  "verdict": "YELLOW"
+ },
+ "KXFTACOUNTRIES": {
+  "reason": "act: legal ratification mechanism spelled out in full",
+  "swept": "2026-07-16",
+  "verdict": "GREEN"
+ },
+ "KXGOLDCARDS": {
+  "reason": "novel program; quantity counted from news sources",
+  "swept": "2026-07-16",
+  "verdict": "YELLOW"
+ },
+ "KXH100MS": {
+  "reason": "quantitative but compute-price source unverified \u2014 upgrade candidate after source check",
+  "swept": "2026-07-17",
+  "verdict": "YELLOW"
+ },
+ "KXHORMUZNORM": {
+  "reason": "quantitative: IMF PortWatch 7-day moving average vs explicit threshold",
+  "swept": "2026-07-17",
+  "verdict": "GREEN"
+ },
+ "KXINXY": {
+  "reason": "quantitative: index value at explicit date and time",
+  "swept": "2026-07-16",
+  "verdict": "GREEN"
+ },
+ "KXIPO": {
+  "reason": "'confirms an IPO' \u2014 word trigger; EDGAR watcher is the control",
+  "swept": "2026-07-16",
+  "verdict": "YELLOW"
+ },
+ "KXIPOANDURIL": {
+  "reason": "'confirms an IPO' \u2014 word trigger; EDGAR watcher is the control",
+  "swept": "2026-07-16",
+  "verdict": "YELLOW"
+ },
+ "KXIPOAPPSFLYER": {
+  "reason": "'confirms an IPO' \u2014 word trigger; EDGAR watcher is the control",
+  "swept": "2026-07-17",
+  "verdict": "YELLOW"
+ },
+ "KXIPOBEASTINDUSTRIES": {
+  "reason": "'confirms an IPO' \u2014 word trigger; EDGAR watcher is the control",
+  "swept": "2026-07-17",
+  "verdict": "YELLOW"
+ },
+ "KXIPOBREX": {
+  "reason": "'confirms an IPO' \u2014 word trigger; EDGAR watcher is the control",
+  "swept": "2026-07-17",
+  "verdict": "YELLOW"
+ },
+ "KXIPOCANVA": {
+  "reason": "'confirms an IPO' \u2014 word trigger; EDGAR watcher is the control",
+  "swept": "2026-07-17",
+  "verdict": "YELLOW"
+ },
+ "KXIPOCLUELY": {
+  "reason": "'confirms an IPO' \u2014 word trigger; EDGAR watcher is the control",
+  "swept": "2026-07-17",
+  "verdict": "YELLOW"
+ },
+ "KXIPODEEL": {
+  "reason": "'confirms an IPO' \u2014 word trigger; EDGAR watcher is the control",
+  "swept": "2026-07-17",
+  "verdict": "YELLOW"
+ },
+ "KXIPOFANNIE": {
+  "reason": "'confirms an IPO' \u2014 word trigger; EDGAR watcher is the control",
+  "swept": "2026-07-17",
+  "verdict": "YELLOW"
+ },
+ "KXIPOGLEAN": {
+  "reason": "'confirms an IPO' \u2014 word trigger; EDGAR watcher is the control",
+  "swept": "2026-07-17",
+  "verdict": "YELLOW"
+ },
+ "KXIPOOLIPOP": {
+  "reason": "'confirms an IPO' \u2014 word trigger; EDGAR watcher is the control",
+  "swept": "2026-07-17",
+  "verdict": "YELLOW"
+ },
+ "KXIPOOPENAI": {
+  "reason": "'confirms an IPO' \u2014 word trigger; EDGAR watcher is the control",
+  "swept": "2026-07-17",
+  "verdict": "YELLOW"
+ },
+ "KXIPORAMP": {
+  "reason": "'confirms an IPO' \u2014 word trigger; EDGAR watcher is the control",
+  "swept": "2026-07-17",
+  "verdict": "YELLOW"
+ },
+ "KXIPORIPPLING": {
+  "reason": "'confirms an IPO' \u2014 word trigger; EDGAR watcher is the control",
+  "swept": "2026-07-17",
+  "verdict": "YELLOW"
+ },
+ "KXIPOSKIMS": {
+  "reason": "'confirms an IPO' \u2014 word trigger; EDGAR watcher is the control",
+  "swept": "2026-07-17",
+  "verdict": "YELLOW"
+ },
+ "KXIPOSTARLINK": {
+  "reason": "'confirms an IPO' \u2014 word trigger; EDGAR watcher is the control",
+  "swept": "2026-07-16",
+  "verdict": "YELLOW"
+ },
+ "KXIPOWHOOP": {
+  "reason": "'confirms an IPO' \u2014 word trigger; EDGAR watcher is the control",
+  "swept": "2026-07-17",
+  "verdict": "YELLOW"
+ },
+ "KXKLAR": {
+  "reason": "quantitative: company-reported metric in official reports",
+  "swept": "2026-07-17",
+  "verdict": "GREEN"
+ },
+ "KXLAGODAYS": {
+  "reason": "trip-counting definitional edges",
+  "swept": "2026-07-16",
+  "verdict": "YELLOW"
+ },
+ "KXLEAVEADMIN": {
+  "reason": "'or it is announced they will leave' \u2014 announcement widens YES surface",
+  "swept": "2026-07-16",
+  "verdict": "YELLOW"
+ },
+ "KXLEAVEHOUSE": {
+  "reason": "act: leaves office \u2014 precise; NO-seller is short mortality/scandal tail",
+  "swept": "2026-07-16",
+  "verdict": "GREEN"
+ },
+ "KXLEAVELISACOOK": {
+  "reason": "'leaves or announces that they will leave' \u2014 announcement widens YES",
+  "swept": "2026-07-17",
+  "verdict": "YELLOW"
+ },
+ "KXLEAVEPOWELL": {
+  "reason": "act: departure from office; rule explicitly excludes mere announcement",
+  "swept": "2026-07-16",
+  "verdict": "GREEN"
+ },
+ "KXLEAVEWALZ": {
+  "reason": "act: leaves office \u2014 same class as House-departure series",
+  "swept": "2026-07-17",
+  "verdict": "GREEN"
+ },
+ "KXMETA": {
+  "reason": "quantitative: company-reported metric in official reports",
+  "swept": "2026-07-17",
+  "verdict": "GREEN"
+ },
+ "KXMETAHEADCOUNT": {
+  "reason": "quantitative: company-reported metric in official reports",
+  "swept": "2026-07-16",
+  "verdict": "GREEN"
+ },
+ "KXNASDAQ100Y": {
+  "reason": "quantitative: index value at explicit date and time",
+  "swept": "2026-07-16",
+  "verdict": "GREEN"
+ },
+ "KXNDXADDQ": {
+  "reason": "'announced to be or officially added/removed' \u2014 announcement trigger, index committee upstream",
+  "swept": "2026-07-17",
+  "verdict": "YELLOW"
+ },
+ "KXNDXREMOVEQ": {
+  "reason": "'announced to be or officially added/removed' \u2014 announcement trigger, index committee upstream",
+  "swept": "2026-07-17",
+  "verdict": "YELLOW"
+ },
+ "KXNEWROLEX": {
+  "reason": "'confirmed as CEO' \u2014 verb loose but workable",
+  "swept": "2026-07-16",
+  "verdict": "YELLOW"
+ },
+ "KXPRESVISIT": {
+  "reason": "verb 'visits' undefined (sibling series use geographic-boundary language)",
+  "swept": "2026-07-16",
+  "verdict": "YELLOW"
+ },
+ "KXRECESSAPPT": {
+  "reason": "role-scope judgment (Senate-confirmable position)",
+  "swept": "2026-07-16",
+  "verdict": "YELLOW"
+ },
+ "KXRTX5090MS": {
+  "reason": "quantitative but compute-price source unverified \u2014 upgrade candidate after source check",
+  "swept": "2026-07-17",
+  "verdict": "YELLOW"
+ },
+ "KXSAVEAMERICACLOTURE": {
+  "reason": "act: Library of Congress recorded vote / bill count",
+  "swept": "2026-07-16",
+  "verdict": "GREEN"
+ },
+ "KXSENATECONFIRM": {
+  "reason": "act: Senate floor confirmation vote (recorded); keyword flag overridden on read",
+  "swept": "2026-07-17",
+  "verdict": "GREEN"
+ },
+ "KXSP500ADDQ": {
+  "reason": "'announced to be or officially added/removed' \u2014 announcement trigger, index committee upstream",
+  "swept": "2026-07-17",
+  "verdict": "YELLOW"
+ },
+ "KXSP500REMOVEQ": {
+  "reason": "'announced to be or officially added/removed' \u2014 announcement trigger, index committee upstream",
+  "swept": "2026-07-17",
+  "verdict": "YELLOW"
+ },
+ "KXSPOTIFYMAU": {
+  "reason": "quantitative: company-reported metric in official reports",
+  "swept": "2026-07-16",
+  "verdict": "GREEN"
+ },
+ "KXSTRIPEIPO": {
+  "reason": "'confirms an IPO' \u2014 word trigger; EDGAR watcher is the control",
+  "swept": "2026-07-17",
+  "verdict": "YELLOW"
+ },
+ "KXTARIFFCHECKS": {
+  "reason": "attribution: 'directly attributable to tariff revenue'",
+  "swept": "2026-07-16",
+  "verdict": "RED"
+ },
+ "KXTARIFFRATECAN": {
+  "reason": "'general import tariff rate' undefined against carve-outs",
+  "swept": "2026-07-16",
+  "verdict": "YELLOW"
+ },
+ "KXTARIFFRATEPRC": {
+  "reason": "'general import tariff rate' undefined against carve-outs",
+  "swept": "2026-07-16",
+  "verdict": "YELLOW"
+ },
+ "KXTESLA": {
+  "reason": "quantitative: company-reported metric in official reports",
+  "swept": "2026-07-16",
+  "verdict": "GREEN"
+ },
+ "KXTESLAPROD": {
+  "reason": "quantitative: company-reported metric in official reports",
+  "swept": "2026-07-16",
+  "verdict": "GREEN"
+ },
+ "KXTOL": {
+  "reason": "quantitative: company-reported metric in official reports",
+  "swept": "2026-07-17",
+  "verdict": "GREEN"
+ },
+ "KXTRUMPDCTAKEOVER": {
+  "reason": "act: formal executive action invoking a named statute (\u00a7740 DC Home Rule Act)",
+  "swept": "2026-07-17",
+  "verdict": "GREEN"
+ },
+ "KXTRUMPIRAN": {
+  "reason": "act: physical presence within geographic boundaries \u2014 precise travel language",
+  "swept": "2026-07-16",
+  "verdict": "GREEN"
+ },
+ "KXTRUMPPARDON": {
+  "reason": "act: official pardon/commutation record (White House source)",
+  "swept": "2026-07-16",
+  "verdict": "GREEN"
+ },
+ "KXUBERTRIPS": {
+  "reason": "quantitative: company-reported metric in official reports",
+  "swept": "2026-07-16",
+  "verdict": "GREEN"
+ },
+ "KXURBN": {
+  "reason": "quantitative: company-reported metric in official reports",
+  "swept": "2026-07-17",
+  "verdict": "GREEN"
+ },
+ "KXVISITIRAN": {
+  "reason": "act: physical presence within geographic boundaries \u2014 precise travel language",
+  "swept": "2026-07-16",
+  "verdict": "GREEN"
+ },
+ "KXVISITNYC": {
+  "reason": "act: physical presence within geographic boundaries \u2014 precise travel language",
+  "swept": "2026-07-16",
+  "verdict": "GREEN"
+ },
+ "KXVISITVENEZUELA": {
+  "reason": "act: physical presence within geographic boundaries \u2014 precise travel language",
+  "swept": "2026-07-16",
+  "verdict": "GREEN"
+ },
+ "KXWAYMO": {
+  "reason": "'confirms an IPO' \u2014 word trigger; EDGAR watcher is the control",
+  "swept": "2026-07-17",
+  "verdict": "YELLOW"
+ },
+ "KXWHVISIT": {
+  "reason": "'visits the White House' \u2014 scope of grounds unclear",
+  "swept": "2026-07-16",
+  "verdict": "YELLOW"
+ },
+ "KXWMT": {
+  "reason": "quantitative: company-reported metric in official reports",
+  "swept": "2026-07-17",
+  "verdict": "GREEN"
+ }
+}

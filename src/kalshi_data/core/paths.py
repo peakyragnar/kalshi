@@ -29,6 +29,11 @@ CANDIDATES = STATE / "candidates_today.json"
 SHADOW_BOOK = STATE / "shadow_book.json"
 EDGE_HISTORY = STATE / "edge_health_history.jsonl"
 
+TAIL_SIGNALS = STATE / "tail_signals.json"
+
+OPS = ROOT / "ops"
+RULEBOOK_VERDICTS = OPS / "rulebook-verdicts.json"
+
 RESEARCH = ROOT / "research"
 REPORTS = ROOT / "reports"
 DASHBOARD = ROOT / "dashboard"

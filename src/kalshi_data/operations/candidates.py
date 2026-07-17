@@ -12,62 +12,24 @@ Pipeline (market-structure.md Part 2 + rulebook-sweep selection rules):
 from __future__ import annotations
 
 import datetime as dt
+import json
 
 import polars as pl
 
 from ..core.client import KalshiClient
 from ..core.parse import cents
 
-from ..core.paths import CANDIDATES, REPORTS as REPORTS_DIR, SERIES
+from ..core.paths import CANDIDATES, REPORTS as REPORTS_DIR, RULEBOOK_VERDICTS, SERIES
 
-BLACKLIST = {
-    "KXCRYPTOSTRUCTURE", "KXTARIFFCHECKS",                       # RED rulebooks
+STRUCTURAL_EXCLUSIONS = {
     "KXRTICKET", "KXDTICKET", "KXWCPRICE", "KXNHLPRICE", "KXNBAFINALSPRICE",  # tickets
     "KXFED", "KXFEDDECISION", "KXPAYROLLS", "KXGDP",             # professionally priced
-    "KXCBPAIRPORT",                                              # RED: causal attribution
 }
-GREEN = {
-    "KXVISITVENEZUELA", "KXVISITIRAN", "KXVISITNYC", "KXTRUMPIRAN",
-    "KXEXPELSWALWELLVOTES", "KXSAVEAMERICACLOTURE", "KXBILLSCOUNT",
-    "KXAPRPOTUSEOY", "KXFTACOUNTRIES", "KXTRUMPPARDON", "KXLEAVEPOWELL",
-    "KXLEAVEHOUSE", "KXNASDAQ100Y", "KXINXY", "KXTESLA", "KXTESLAPROD",
-    "KXBOEING", "KXMETAHEADCOUNT", "KXSPOTIFYMAU", "KXCBVOLUME",
-    "KXDASHORDERS", "KXUBERTRIPS",
-    "KXBULL", "KXHORMUZNORM", "KXKLAR", "KXMETA", "KXSENATECONFIRM", "KXTOL", "KXURBN", "KXWMT",
-    "KXALITOOUT", "KXLEAVEWALZ", "KXTRUMPDCTAKEOVER",
-}
-YELLOW = {
-    "KXPRESVISIT", "KXWHVISIT", "KXTARIFFRATECAN", "KXTARIFFRATEPRC",
-    "KXLAGODAYS", "KXGOLDCARDS", "KXLEAVEADMIN", "KXRECESSAPPT",
-    "KXIPO", "KXIPOANDURIL", "KXIPOSTARLINK", "KXNEWROLEX",
-    "KXA100MS",
-    "KXCOMPANYACTIONMERGER",
-    "KXDATABRICKS",
-    "KXFREDDIE",
-    "KXH100MS",
-    "KXIPOAPPSFLYER",
-    "KXIPOBEASTINDUSTRIES",
-    "KXIPOBREX",
-    "KXIPOCANVA",
-    "KXIPOCLUELY",
-    "KXIPODEEL",
-    "KXIPOFANNIE",
-    "KXIPOGLEAN",
-    "KXIPOOLIPOP",
-    "KXIPOOPENAI",
-    "KXIPORAMP",
-    "KXIPORIPPLING",
-    "KXIPOSKIMS",
-    "KXIPOWHOOP",
-    "KXNDXADDQ",
-    "KXNDXREMOVEQ",
-    "KXRTX5090MS",
-    "KXSP500ADDQ",
-    "KXSP500REMOVEQ",
-    "KXSTRIPEIPO",
-    "KXWAYMO",
-    "KXLEAVELISACOOK",
-}
+VERDICTS: dict = json.loads(RULEBOOK_VERDICTS.read_text())
+GREEN = {t for t, v in VERDICTS.items() if v["verdict"] == "GREEN"}
+YELLOW = {t for t, v in VERDICTS.items() if v["verdict"] == "YELLOW"}
+RED = {t for t, v in VERDICTS.items() if v["verdict"] == "RED"}
+BLACKLIST = RED | STRUCTURAL_EXCLUSIONS
 
 CELLS = {
     "Politics": {"window": (20, 45), "max_ask": 5},
