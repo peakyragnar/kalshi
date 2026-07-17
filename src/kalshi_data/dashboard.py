@@ -52,8 +52,33 @@ def recorder_status() -> tuple[str, str]:
 
 
 def chip(verdict: str) -> str:
-    color = {"GREEN": "#0a7a33", "YELLOW": "#9a6b00", "UNSWEPT": "#666", "RED": "#b3261e"}[verdict]
+    color = {"GREEN": "#0a7a33", "YELLOW": "#9a6b00", "AMBER": "#9a6b00",
+             "UNSWEPT": "#666", "THIN": "#666", "RED": "#b3261e"}[verdict]
     return f'<span class="chip" style="--c:{color}">{verdict}</span>'
+
+
+def edge_health_html() -> str:
+    hist = DATA / "edge_health_history.jsonl"
+    if not hist.exists():
+        return "<p class='sub'>edge health: not yet run</p>"
+    rec = json.loads(hist.read_text().strip().splitlines()[-1])
+    rows = []
+    for name, e in rec["cells"].items():
+        t90 = e["t90"]
+        stat = (
+            f"trailing-90d {t90['mean']:+.1%} ± {t90['se']:.1%} (n={t90['n']}) · baseline {e['baseline']:+.1%}"
+            if t90.get("mean") is not None else f"insufficient sample (n={t90.get('n', 0)})"
+        )
+        rows.append(
+            f"<div class='cell'><div class='cellname'>{name} {chip(e['light'])}</div>"
+            f"<div class='cellstats'>{stat}</div></div>"
+        )
+    extras = (
+        f"<div class='sub'>falsification metrics (trailing 90d): calibration gap "
+        f"{rec.get('calibration_gap_t90')} · maker−taker gap {rec.get('maker_taker_gap_t90')} "
+        f"over {rec.get('n_fills_t90', 0):,} fills · graded {rec['ts'][:10]}</div>"
+    )
+    return "".join(rows) + extras
 
 
 def run() -> Path:
@@ -128,6 +153,9 @@ details summary {{ cursor:pointer; color:var(--mut); font-size:13px; }}
   <div class="tile"><div class="v">1-in-10</div><div class="l">expected tail loss rate</div></div>
   <div class="tile"><div class="v">~15%/yr</div><div class="l">politics cell, pessimistic tail</div></div>
 </div>
+
+<h2>Edge health (weekly, pre-committed lights: AMBER = halve entries, RED = stop)</h2>
+{edge_health_html()}
 
 <h2>Qualifying cells (Phase 3 map, 2026-07-16)</h2>
 {cells_html}

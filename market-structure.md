@@ -154,3 +154,9 @@ rates collapsing. All three are tracked automatically (below).
   categorical/attribution judgment conditions, excluded). No discretionary
   settlement language found anywhere. New selection rule: prefer act-conditions
   over announcement/attribution triggers.
+- 2026-07-17: Settled corpus now self-updating (daily incremental ingest);
+  edge_health live on weekly schedule with pre-committed lights. First grading:
+  politics_30d GREEN (+28.0% t90), financials_90d AMBER (bound 6.6% < 7% on
+  n=70 — halved-entry rule applies). APY prose corrected to 3.25% (code was
+  always 0.0325). Falsification metrics tracked: calibration gap −1.0pp,
+  maker−taker gap +26.8pp (both alive).
