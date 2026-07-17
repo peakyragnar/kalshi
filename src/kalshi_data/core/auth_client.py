@@ -22,15 +22,41 @@ from pathlib import Path
 
 import httpx
 
+ROOT = Path(__file__).resolve().parents[3]
 KEY_DIR = Path.home() / ".kalshi"
-KEY_ID_FILE = KEY_DIR / "key_id"
-PEM_FILE = KEY_DIR / "kalshi.pem"
 BASE = "https://api.elections.kalshi.com"
 API_PREFIX = "/trade-api/v2"
 
 
+def _env_file() -> dict:
+    out = {}
+    f = ROOT / ".env"
+    if f.exists():
+        for line in f.read_text().splitlines():
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                k, v = line.split("=", 1)
+                out[k.strip()] = v.strip().strip("'\"")
+    return out
+
+
+def find_credentials() -> tuple[str, Path] | None:
+    """(key_id, pem_path). Sources, in order: repo .env + kalshi.pem
+    (both gitignored), then ~/.kalshi/key_id + ~/.kalshi/kalshi.pem."""
+    import os
+
+    env = {**_env_file(), **os.environ}
+    key_id = env.get("KALSHI_KEY_ID", "").strip()
+    pem = Path(env.get("KALSHI_PRIVATE_KEY_PATH", "")) if env.get("KALSHI_PRIVATE_KEY_PATH") else ROOT / "kalshi.pem"
+    if key_id and pem.exists():
+        return key_id, pem
+    if (KEY_DIR / "key_id").exists() and (KEY_DIR / "kalshi.pem").exists():
+        return (KEY_DIR / "key_id").read_text().strip(), KEY_DIR / "kalshi.pem"
+    return None
+
+
 def credentials_present() -> bool:
-    return KEY_ID_FILE.exists() and PEM_FILE.exists()
+    return find_credentials() is not None
 
 
 def sign(private_key, timestamp_ms: str, method: str, path: str) -> str:
@@ -52,12 +78,14 @@ class KalshiAuthedClient:
     def __init__(self, rps: float = 4.0, timeout: float = 30.0):
         from cryptography.hazmat.primitives import serialization
 
-        if not credentials_present():
+        creds = find_credentials()
+        if creds is None:
             raise FileNotFoundError(
-                f"no credentials: expected {KEY_ID_FILE} and {PEM_FILE} (operator-placed)"
+                "no credentials: expected KALSHI_KEY_ID in .env + kalshi.pem in the "
+                "project folder (or ~/.kalshi/key_id + ~/.kalshi/kalshi.pem)"
             )
-        self._key_id = KEY_ID_FILE.read_text().strip()
-        self._pk = serialization.load_pem_private_key(PEM_FILE.read_bytes(), password=None)
+        self._key_id, pem_path = creds
+        self._pk = serialization.load_pem_private_key(pem_path.read_bytes(), password=None)
         self._min_interval = 1.0 / rps
         self._last = 0.0
         self._http = httpx.Client(base_url=BASE, timeout=timeout)

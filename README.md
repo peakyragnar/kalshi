@@ -88,10 +88,11 @@ Permissions for the headless session: minimal allowlist in `.claude/settings.jso
 
 ## Real portfolio setup (operator-only, one time)
 
-1. Kalshi → account settings → API → create key. You get a key ID and a
+1. Kalshi → account settings → API → create key. You get a key ID (text) and a
    downloaded private key file.
-2. `mkdir -p ~/.kalshi && chmod 700 ~/.kalshi`, put the key ID (one line) in
-   `~/.kalshi/key_id` and the PEM in `~/.kalshi/kalshi.pem`, `chmod 600` both.
+2. Put the downloaded key file in this folder named `kalshi.pem`, and create
+   `.env` in this folder containing one line: `KALSHI_KEY_ID=<your key id>`.
+   Both are gitignored and never leave this machine. (`~/.kalshi/` also works.)
 3. Never paste key material into chat, the repo, or logs. The sync
    (`operations/portfolio.py`) is read-only by construction — the client has no
    order methods. Returns baseline is recorded at first successful sync in
