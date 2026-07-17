@@ -54,7 +54,7 @@ details summary { cursor:pointer; color:var(--mut); font-size:13px; }
 NAV = (
     "<div style='margin-bottom:12px; font-size:14px;'>"
     "<a href='index.html' style='color:var(--acc); text-decoration:none; margin-right:16px;'>Overview</a>"
-    "<a href='signals.html' style='color:var(--acc); text-decoration:none;'>Transparency — every verdict, with reasons</a>"
+    "<a href='congress.html' style='color:var(--acc); text-decoration:none;'>Congress — confirmation pipeline research</a>"
     "</div>"
 )
 
@@ -94,11 +94,12 @@ def recorder_status() -> tuple[str, str]:
     return last, f"{day_files} day-files"
 
 
-def chip(verdict: str) -> str:
+def chip(verdict: str, tooltip: str = "") -> str:
     color = {"GREEN": "#0a7a33", "YELLOW": "#9a6b00", "AMBER": "#9a6b00",
              "UNSWEPT": "#666", "THIN": "#666", "RED": "#b3261e",
              "CLEAR": "#0a7a33", "WARM": "#9a6b00", "HOT": "#b3261e", "UNKNOWN": "#666"}[verdict]
-    return f'<span class="chip" style="--c:{color}">{verdict}</span>'
+    t = f' title="{tooltip}"' if tooltip else ""
+    return f'<span class="chip" style="--c:{color}"{t}>{verdict}</span>'
 
 
 def health_checks() -> list[tuple[str, bool, str]]:
@@ -230,47 +231,46 @@ def shadow_book_html() -> str:
     return tiles + table + note
 
 
-def signals_page(style: str, now: str) -> str:
-    verdicts = json.loads(RULEBOOK_VERDICTS.read_text()) if RULEBOOK_VERDICTS.exists() else {}
-    cands = json.loads(CANDIDATES.read_text()) if CANDIDATES.exists() else []
+def congress_page(style: str, now: str) -> str:
+    """The congressional watcher's research surface: live evidence per market."""
     tails = json.loads(TAIL_SIGNALS.read_text()) if TAIL_SIGNALS.exists() else []
+    held = set()
+    if SHADOW_BOOK.exists():
+        book = json.loads(SHADOW_BOOK.read_text())
+        held = {o["ticker"] for o in book.get("orders", []) if o["state"] not in ("cancelled", "settled")}
 
-    tail_rows = "".join(
+    rows = "".join(
         f"<tr><td class='mono'>{t['ticker']}</td><td>{t.get('nominee') or '—'}</td>"
-        f"<td>{chip(t['signal'])}</td><td>{t['evidence']}</td>"
-        f"<td class='num'>{t['checked'][:16]}</td>"
-        f"<td><a href='{t['source']}' style='color:var(--acc)'>calendar</a></td></tr>"
+        f"<td>{chip(t['signal'])}</td>"
+        f"<td>{'YES' if t['ticker'] in held else ''}</td>"
+        f"<td>{t['evidence']}</td>"
+        f"<td class='num'>{t.get('session_days_left') if t.get('session_days_left') is not None else '?'}</td>"
+        f"<td class='num'>{t['checked'][:16]}</td></tr>"
         for t in tails
-    ) or "<tr><td colspan='6'>no confirmation-type candidates today</td></tr>"
-
-    cand_rows = []
-    for c in sorted(cands, key=lambda x: (x["category"], x["series"], x["ticker"])):
-        v = verdicts.get(c["series"], {})
-        reason = v.get("reason", "not yet swept — untouchable until read")
-        swept = v.get("swept", "—")
-        cand_rows.append(
-            f"<tr><td class='mono'>{c['ticker']}</td><td>{c['title'][:48]}</td>"
-            f"<td>{chip(c['rulebook'])}</td><td>{reason}</td><td class='num'>{swept}</td></tr>"
-        )
+    ) or "<tr><td colspan='7'>no confirmation-type candidates in today's window</td></tr>"
 
     return f"""<!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Kalshi structure — transparency</title>{style}</head><body>
-<h1>Transparency — every verdict, with its reason</h1>
-<div class="sub">generated {now} · nothing on the overview is asserted without a row here</div>
+<title>Kalshi structure — Congress</title>{style}</head><body>
+<h1>Congress — confirmation pipeline research</h1>
+<div class="sub">generated {now} · a nominee cannot be confirmed without published floor time —
+this page shows what the watcher found for every confirmation-type candidate market</div>
 {NAV}
-<h2>Tail signals — what the congressional watcher actually found</h2>
-<table><tr><th>market</th><th>nominee</th><th>signal</th><th>evidence (from the Senate Executive Calendar)</th><th>checked</th><th>source</th></tr>
-{tail_rows}</table>
+<h2>Method</h2>
+<div class="warn">Daily: fetch the <a href='https://www.senate.gov/legislative/LIS/executive_calendar/xcalv.pdf'
+style='color:var(--acc)'>Senate Executive Calendar</a> (official PDF), extract each market's nominee from its
+title, and search the calendar. Absent → CLEAR (still in committee; calendaring would be caught next run).
+Present → WARM (floor-eligible any session day). In the cloture section → HOT (vote imminent; never place,
+flag held positions). Extraction failure → UNKNOWN, treated as WARM, never CLEAR. Session-days column is
+'?' until the congress.gov API key provides the forward floor schedule.</div>
 
-<h2>Rulebook verdicts — why each candidate is GREEN / YELLOW / RED</h2>
-<div class="sub">verdicts live in <span class='mono'>ops/rulebook-verdicts.json</span> (versioned); full sweep write-ups in <a href='../research/rulebook-sweep.md' style='color:var(--acc)'>research/rulebook-sweep.md</a></div>
-<table><tr><th>market</th><th>title</th><th>verdict</th><th>reason</th><th>swept</th></tr>
-{"".join(cand_rows)}</table>
+<h2>Current signals</h2>
+<table><tr><th>market</th><th>nominee</th><th>signal</th><th>held?</th>
+<th>evidence — literal text from the calendar</th><th>session days</th><th>checked</th></tr>
+{rows}</table>
 
-<div class="warn">Verdict discipline: uncertain between GREEN and YELLOW → YELLOW; any condition requiring
-interpretation of motive, attribution, or category membership → RED, always. Tail-signal evidence is the
-literal calendar text the watcher matched; CLEAR means the surname is absent from the current calendar.</div>
+<div class="sub" style="margin-top:8px">History: <span class='mono'>reports/tail_signals.md</span> ·
+signals also chip the Overview candidate rows · placement rule: HOT is never placed</div>
 </body></html>"""
 
 
@@ -306,6 +306,11 @@ def run() -> Path:
     for c in cands:
         by_verdict[c["rulebook"]] = by_verdict.get(c["rulebook"], 0) + 1
 
+        verdicts = json.loads(RULEBOOK_VERDICTS.read_text()) if RULEBOOK_VERDICTS.exists() else {}
+    tail_ev = {}
+    if TAIL_SIGNALS.exists():
+        tail_ev = {t["ticker"]: t["evidence"] for t in json.loads(TAIL_SIGNALS.read_text())}
+
     def cand_rows(cat):
         rows = [c for c in cands if c["category"] == cat]
         rows.sort(key=lambda c: int(c["days_to_close"]))
@@ -315,8 +320,8 @@ def run() -> Path:
             out.append(
                 f"<tr><td class='mono'><a href='{url}' style='color:var(--acc); text-decoration:none'>{c['ticker']}</a></td><td>{c['title']}</td>"
                 f"<td class='num'>{c['days_to_close']}</td><td class='num'>{c['yes_ask_c']}¢</td>"
-                f"<td class='num'>{c['rest_no_at_c']}¢</td><td>{chip(c['rulebook'])}"
-                + (f" {chip(c['tail_signal'])}" if c.get("tail_signal") else "")
+                f"<td class='num'>{c['rest_no_at_c']}¢</td><td>{chip(c['rulebook'], verdicts.get(c['series'], {}).get('reason', ''))}"
+                + (f" {chip(c['tail_signal'], tail_ev.get(c['ticker'], ''))}" if c.get("tail_signal") else "")
                 + "</td></tr>"
             )
         return "\n".join(out), len(rows)
@@ -380,7 +385,7 @@ def run() -> Path:
 in both periods. Tail estimates rest on 1 observed loss per cell — see memos. Recorder last run: {rec_last}</div>
 </body></html>"""
     OUT.mkdir(exist_ok=True)
-    (OUT / "signals.html").write_text(signals_page(STYLE, now))
+    (OUT / "congress.html").write_text(congress_page(STYLE, now))
     path = OUT / "index.html"
     path.write_text(html)
     print(f"dashboard -> {path}")
