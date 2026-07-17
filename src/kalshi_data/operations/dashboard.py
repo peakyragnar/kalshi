@@ -184,6 +184,50 @@ def health_strip_html() -> str:
     )
 
 
+def real_book_html() -> str:
+    pf = STATE / "portfolio.json"
+    if not pf.exists():
+        return "<p class='sub'>real portfolio: sync never run</p>"
+    p = json.loads(pf.read_text())
+    if not p.get("available"):
+        return (
+            "<div class='warn'><b>Real portfolio: not connected.</b> "
+            "Create a Kalshi API key (account settings), then place the two files yourself: "
+            "<span class='mono'>~/.kalshi/key_id</span> and <span class='mono'>~/.kalshi/kalshi.pem</span> "
+            "(chmod 600). The sync is read-only by construction; the key never enters this repo or any chat.</div>"
+        )
+    s = p["sizing"]
+    tiles = (
+        f"<div class='tiles' style='margin-bottom:10px'>"
+        f"<div class='tile'><div class='v'>${p['equity_usd']:,.2f}</div><div class='l'>equity (cash ${p['cash_usd']:,.2f} + positions ${p['exposure_usd']:,.2f})</div></div>"
+        f"<div class='tile'><div class='v'>${p['pnl_usd']:+,.2f}</div><div class='l'>P&L since {p['since']} (baseline ${p['baseline_usd']:,.2f})</div></div>"
+        f"<div class='tile'><div class='v'>${s['politics_unit_usd']:,.0f} / ${s['financials_unit_usd']:,.0f}</div><div class='l'>live unit: Politics / Financials (2.5% of equity, AMBER ×½)</div></div>"
+        f"<div class='tile'><div class='v'>{len(p['positions'])} + {len(p['resting_orders'])}</div><div class='l'>positions + resting orders</div></div>"
+        f"</div>"
+    )
+    rows = "".join(
+        f"<tr><td class='mono'>{r['ticker']}</td><td>{r['side']}</td>"
+        f"<td class='num'>{abs(r['position'])}</td><td class='num'>${r['exposure_usd']:,.2f}</td>"
+        f"<td class='num'>${r['realized_usd']:+,.2f}</td></tr>"
+        for r in p["positions"]
+    )
+    orders = "".join(
+        f"<tr><td class='mono'>{r['ticker']}</td><td>{r['side']}</td>"
+        f"<td class='num'>{r['price_c']}¢</td><td class='num'>{r['resting']}</td></tr>"
+        for r in p["resting_orders"]
+    )
+    html = tiles
+    if rows:
+        html += ("<table><tr><th>position</th><th>side</th><th>qty</th><th>value</th><th>realized</th></tr>"
+                 + rows + "</table>")
+    if orders:
+        html += ("<div style='height:8px'></div><table><tr><th>resting order</th><th>side</th><th>price</th><th>qty</th></tr>"
+                 + orders + "</table>")
+    if not rows and not orders:
+        html += "<div class='sub'>no positions or resting orders yet — cash earning APY</div>"
+    return html + f"<div class='sub' style='margin-top:6px'>read-only sync · updated {p['ts'][:16]}</div>"
+
+
 def shadow_book_html() -> str:
     bf = SHADOW_BOOK
     if not bf.exists():
@@ -358,7 +402,10 @@ def run() -> Path:
   <div class="tile"><div class="v">~15%/yr</div><div class="l">politics cell, pessimistic tail</div></div>
 </div>
 
-<h2>Shadow book — paper positions, real fills, real settlements</h2>
+<h2>Real portfolio — your Kalshi account (read-only)</h2>
+{real_book_html()}
+
+<h2>Shadow book — paper control group ($10k nominal)</h2>
 {shadow_book_html()}
 
 <h2>Edge health (weekly, pre-committed lights: AMBER = halve entries, RED = stop)</h2>

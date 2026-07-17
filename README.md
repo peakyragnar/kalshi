@@ -85,3 +85,15 @@ top only when something genuinely needs a human — a HOT signal on a held
 market, a new RED rulebook, an edge-health light change, or an unfixable
 pipeline failure. If it's not on the dashboard, it didn't happen.
 Permissions for the headless session: minimal allowlist in `.claude/settings.json`.
+
+## Real portfolio setup (operator-only, one time)
+
+1. Kalshi → account settings → API → create key. You get a key ID and a
+   downloaded private key file.
+2. `mkdir -p ~/.kalshi && chmod 700 ~/.kalshi`, put the key ID (one line) in
+   `~/.kalshi/key_id` and the PEM in `~/.kalshi/kalshi.pem`, `chmod 600` both.
+3. Never paste key material into chat, the repo, or logs. The sync
+   (`operations/portfolio.py`) is read-only by construction — the client has no
+   order methods. Returns baseline is recorded at first successful sync in
+   `data/state/portfolio_baseline.json`; sizing units on the dashboard derive
+   from live equity (2.5% Politics, ×½ AMBER).
