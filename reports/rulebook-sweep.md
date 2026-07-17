@@ -53,3 +53,19 @@ attribution/categorical conditions entirely.**
 Settlement-source note: politics series settle off named-outlet panels
 (Guardian/Fox/WSJ etc.) or official bodies; the panel structure means no single
 outlet decides. Acceptable; official-body sources remain preferable.
+
+## Sweep 2 — 2026-07-17 (today's candidate backlog, 34 series)
+
+- **GREEN (8):** KXSENATECONFIRM (Senate floor vote = act; keyword flag overridden
+  on read), KXHORMUZNORM (IMF PortWatch, quantitative), and six company-metric
+  templates: KXBULL, KXKLAR, KXMETA, KXTOL, KXURBN, KXWMT.
+- **YELLOW (26):** 18-series IPO family ("confirms an IPO" — word trigger; EDGAR
+  watcher is the control), index add/remove quartet (official but
+  announcement-triggered, committee upstream), KXCOMPANYACTIONMERGER
+  ("officially announces a definitive, binding agreement"), and three NVIDIA
+  compute-price series (quantitative but pricing source unverified — upgrade
+  candidates after source check).
+- **RED (0).** Drafting quality consistent with sweep 1.
+
+Process note: candidate-backlog sweeps are the rolling daily chore; verdicts
+land in candidates.py sets and flow to the dashboard same-day.
