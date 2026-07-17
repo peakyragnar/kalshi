@@ -57,6 +57,65 @@ def chip(verdict: str) -> str:
     return f'<span class="chip" style="--c:{color}">{verdict}</span>'
 
 
+def health_checks() -> list[tuple[str, bool, str]]:
+    """Step 0: the four freshness gates. (name, ok, detail)."""
+    now = dt.datetime.now(dt.timezone.utc)
+    checks = []
+
+    todays_books = DATA / "books" / f"books_{now:%Y%m%d}.jsonl"
+    yesterdays = DATA / "books" / f"books_{(now - dt.timedelta(days=1)):%Y%m%d}.jsonl"
+    ok = todays_books.exists() or (now.hour < 8 and yesterdays.exists())
+    detail = "today's file present" if todays_books.exists() else "no snapshot yet today"
+    checks.append(("recorder", ok, detail))
+
+    ckpt = DATA / "checkpoints" / "incremental.json"
+    if ckpt.exists():
+        hw = dt.datetime.fromisoformat(json.loads(ckpt.read_text())["high_water"])
+        age_h = (now - hw).total_seconds() / 3600
+        checks.append(("settled ingest", age_h < 36, f"high water {age_h:.0f}h ago"))
+    else:
+        checks.append(("settled ingest", False, "never run"))
+
+    cands = DATA / "candidates_today.json"
+    if cands.exists():
+        age_h = (now - dt.datetime.fromtimestamp(cands.stat().st_mtime, dt.timezone.utc)).total_seconds() / 3600
+        checks.append(("candidates", age_h < 30, f"refreshed {age_h:.0f}h ago"))
+    else:
+        checks.append(("candidates", False, "never run"))
+
+    hist = DATA / "edge_health_history.jsonl"
+    if hist.exists():
+        last = json.loads(hist.read_text().strip().splitlines()[-1])
+        age_d = (now - dt.datetime.fromisoformat(last["ts"])).days
+        checks.append(("edge grading", age_d <= 8, f"graded {age_d}d ago"))
+    else:
+        checks.append(("edge grading", False, "never run"))
+    return checks
+
+
+def health_strip_html() -> str:
+    items = []
+    all_ok = True
+    for name, ok, detail in health_checks():
+        all_ok &= ok
+        mark = "✓" if ok else "✗"
+        color = "#0a7a33" if ok else "#b3261e"
+        items.append(
+            f"<span style='margin-right:18px'><b style='color:{color}'>{mark}</b> "
+            f"{name} <span style='color:var(--mut); font-size:12px'>({detail})</span></span>"
+        )
+    verdict = (
+        "<b style='color:#0a7a33'>SYSTEM HEALTHY — proceed to step 1</b>" if all_ok
+        else "<b style='color:#b3261e'>STALE DATA — fix the pipeline before any trading decision</b>"
+    )
+    return (
+        f"<div style='background:var(--card); border:1px solid var(--line); border-radius:10px; "
+        f"padding:10px 14px; margin-bottom:14px; font-size:13px;'>"
+        f"<div style='color:var(--mut); font-size:12px; margin-bottom:4px'>step 0 — machine health</div>"
+        f"{''.join(items)}<div style='margin-top:6px'>{verdict}</div></div>"
+    )
+
+
 def edge_health_html() -> str:
     hist = DATA / "edge_health_history.jsonl"
     if not hist.exists():
@@ -145,6 +204,8 @@ details summary {{ cursor:pointer; color:var(--mut); font-size:13px; }}
 </style></head><body>
 <h1>Kalshi market structure — operations</h1>
 <div class="sub">generated {now} · data through latest settled feed · recorder: {rec_days} · deployment status: <b>diligence phase — no live positions</b></div>
+
+{health_strip_html()}
 
 <div class="tiles">
   <div class="tile"><div class="v">2</div><div class="l">qualifying cells (of 58)</div></div>
