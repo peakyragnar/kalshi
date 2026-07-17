@@ -139,15 +139,22 @@ def shadow_book_html() -> str:
             pnl = f"{o['realized_usd']:+,.2f} ({o['result']})"
         elif o["filled_qty"] and o.get("mark_c") is not None:
             pnl = f"{o['filled_qty'] * (o['mark_c'] - o['price_c']) / 100:+,.2f} @ mark {o['mark_c']}¢"
+        committed = o["qty"] * o["price_c"] / 100
         rows.append(
             f"<tr><td class='mono'>{o['ticker']}</td><td>{o['title'][:44]}</td>"
             f"<td class='num'>{o['price_c']}¢</td><td class='num'>{fill}</td>"
+            f"<td class='num'>${committed:,.0f}</td>"
             f"<td>{o['state']}</td><td class='num'>{pnl}</td></tr>"
         )
     table = (
-        "<table><tr><th>ticker</th><th>market</th><th>rest NO</th><th>filled</th><th>state</th><th>P&L</th></tr>"
+        "<table><tr><th>ticker</th><th>market</th><th>rest NO</th><th>filled</th><th>size</th><th>state</th><th>P&L</th></tr>"
         + "".join(rows) + "</table>"
     )
+    sizing = (
+        "<div class='sub' style='margin:6px 0'>sizing: $10,000 paper book · $250/position Politics (GREEN light) · "
+        "$125/position Financials (AMBER = ×½) · one position per event · max loss per position = its size</div>"
+    )
+    table = sizing + table
     note = (
         "<div class='sub' style='margin-top:6px'>PAPER ONLY — fills simulated as 50% of real prints at/through "
         "our price (queue unknown); settlements and P&L are real outcomes. Started "
