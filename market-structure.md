@@ -80,9 +80,9 @@ frequency. *(Screen C demo, 2026-07-16)*
 ### F9. Cost & carry facts (verified)
 Taker fee = ceil(0.07·P·(1−P)) per contract per fill — a step function that
 dominates below ~10¢. Maker fee zero except 130 designated series. Settlement
-free. APY (~3.25–3.5%, variable) accrues on cash AND open positions
+free. APY (3.25%, variable) accrues on cash AND open positions
 (user-confirmed 2026-07-15); 3-mo T-bill 3.76% (FRED, 2026-07-13) → carry drag
-~26–51bps. **Open question: does cash escrowed behind unfilled resting orders
+~51bps. **Open question: does cash escrowed behind unfilled resting orders
 accrue?** (Assume no until Kalshi confirms — prices the cost of waiting for fills.)
 
 ---

@@ -26,7 +26,7 @@ decision; real-time infrastructure would add cost and fragility, not information
    - observed tail-loss rate vs the memo bounds
 3. **Pre-committed traffic lights** (set now, before any drift is observed):
    - AMBER — trailing-90d cell edge − 1·SE < 7% hurdle → halve new-entry size
-   - RED — trailing-90d cell edge − 1·SE < carry (~3.5%) → stop new entries;
+   - RED — trailing-90d cell edge − 1·SE < carry (3.25%) → stop new entries;
      positions run off naturally
 4. Dashboard: "edge health" section — current vs baseline per cell, trend, light.
 5. When live (Stage 2 of execution plan): fill-rate and realized-vs-modeled P&L

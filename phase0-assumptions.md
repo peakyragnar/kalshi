@@ -9,8 +9,8 @@ amendment at the bottom of this file, with a reason. Silent edits void the analy
 | Item | Value | Source |
 |---|---|---|
 | 3-month T-bill | 3.76% | FRED DTB3, 2026-07-13 |
-| Kalshi APY | ~3.5% (variable) | user-confirmed 2026-07-15; accrues on cash and open positions |
-| Carry drag vs. bills | ~26 bps | difference of the above; charged to every strategy |
+| Kalshi APY | 3.25% (variable) | user-confirmed 2026-07-15; accrues on cash and open positions |
+| Carry drag vs. bills | ~51 bps | difference of the above; charged to every strategy |
 | **Kill threshold** | **7.0% annualized net** | pre-committed; ~3.2 points over bills for platform risk, illiquidity, effort |
 
 A cell qualifies only if annualized net edge > 7.0% **and** > 2 clustered standard errors,
@@ -19,7 +19,7 @@ A cell qualifies only if annualized net edge > 7.0% **and** > 2 clustered standa
 - Return definition: net profit ÷ capital committed, annualized as simple 365/days-held.
   For the T−7d horizon, per-horizon return is reported alongside annualized (annualization
   multiplies fee-rounding noise ~52×).
-- Open positions earn APY, so capital committed is charged only the 26 bps drag plus fees
+- Open positions earn APY, so capital committed is charged only the ~51 bps drag plus fees
   and spread — not the full time value.
 
 ## 2. Fee model
@@ -35,7 +35,7 @@ A cell qualifies only if annualized net edge > 7.0% **and** > 2 clustered standa
 
 ## 3. Carry
 
-- APY accrues on cash and open positions (user-confirmed). Charge: 26 bps drag vs. bills
+- APY accrues on cash and open positions (user-confirmed). Charge: ~51 bps drag vs. bills
   on all committed capital.
 - **Open sub-item (non-blocking):** whether cash escrowed behind unfilled resting orders
   accrues APY. Prices the cost of waiting-to-be-filled; resolve with Kalshi support before
@@ -94,3 +94,6 @@ from Phase 1 day 1) × observed turnover at that cell. Cells ranked by edge × c
   and becomes the sole snapshot source; the staleness field already carries the burden
   the cross-check was for. Candle cross-checks may still be run on post-cutoff markets
   as a one-sided validation.
+- **2026-07-17:** APY corrected in prose from ~3.5% to **3.25%** (user correction);
+  carry drag vs bills restated 26bps → ~51bps. All computed results were always
+  produced with CARRY_APY = 0.0325 in code — prose-only correction, no numbers change.
