@@ -40,8 +40,10 @@ import re
 import xml.etree.ElementTree as ET
 
 import httpx
+import polars as pl
 
-from ..core.paths import CANDIDATES, REPORTS, TAIL_SIGNALS
+from ..core.paths import CANDIDATES, FEATURES, REPORTS, TAIL_SIGNALS
+from ..features.store import normalize_features, write_partition
 
 CAL_PDF_URL = "https://www.senate.gov/legislative/LIS/executive_calendar/xcalv.pdf"
 SCHEDULE_XML_URL = "https://www.senate.gov/legislative/{year}_schedule.xml"
@@ -232,6 +234,24 @@ def run() -> None:
         )
     CANDIDATES.write_text(json.dumps(cands))
     TAIL_SIGNALS.write_text(json.dumps(records, indent=1))
+    feature_rows = []
+    checked_dt = dt.datetime.fromisoformat(checked)
+    for record in records:
+        feature_rows.append(
+            {
+                "source": "senate-executive-calendar",
+                "entity": record["ticker"],
+                "metric": "confirmation_tail_signal",
+                "effective_at": checked_dt,
+                "available_at": checked_dt,
+                "retrieved_at": checked_dt,
+                "value": record["signal"],
+                "revision": today.isoformat(),
+                "evidence": record["evidence"],
+            }
+        )
+    feature_path = FEATURES / f"senate-executive-calendar-{today:%Y%m%d}.parquet"
+    write_partition(normalize_features(pl.DataFrame(feature_rows)), feature_path)
     (REPORTS / "tail_signals.md").write_text("\n".join(lines))
     print("\n".join(lines))
 

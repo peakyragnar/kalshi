@@ -42,7 +42,9 @@ def market_row(m: dict, series_meta: dict) -> dict:
         "close_time": m.get("close_time"),
         "expiration_time": m.get("expiration_time") or m.get("latest_expiration_time"),
         "expected_expiration_time": m.get("expected_expiration_time"),
-        "settled_time": m.get("settled_time"),
+        # Current API calls this settlement_ts; older payloads/tests used
+        # settled_time. Preserve one canonical field in our store.
+        "settled_time": m.get("settlement_ts") or m.get("settled_time"),
         "last_price_cents": cents(m, "last_price"),
         "volume": quantity(m, "volume"),
         "open_interest": quantity(m, "open_interest"),

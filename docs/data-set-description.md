@@ -1,67 +1,79 @@
 # Dataset Description
 
-What we hold from Kalshi, how it grows, and which parts could never be rebuilt.
-Census as of 2026-07-17; sizes grow daily. Everything lives in `data/`
-(gitignored); every table except the order books is fully reproducible from
-Kalshi's free public API via the commands in README.md.
+What we hold from Kalshi, how it grows, and which parts cannot be rebuilt.
+Census as of 2026-07-17; sizes grow daily. Everything under `data/` is
+gitignored.
 
-## The stores
+## Stores
 
-| Store | Size | Rows | Span | Grows |
-|---|---|---|---|---|
-| `raw/series.parquet` | <1MB | 11,486 series — the full exchange catalog, tiered (deployment / instrumentation / excluded / review) | all-time | on re-run |
-| `raw/markets/` | 47MB | 2,731,998 settled deployment-tier markets: outcome, timestamps, per-series fees | Jul 2021 → present | **static — daily incremental ingest is Track 1 of edge-program-plan.md (not yet built)** |
-| `raw/trades/` | 1.5GB | 46,892,108 trades with price, size, timestamp, **aggressor side**, for the 376,557 markets that lived ≥7d and traded | Jun 2021 → Jul 2026 | same as markets |
-| `derived/snapshots.parquet` | 8MB | 429,761 rows: last price + staleness + cumulative volume + outcome at T−7/30/90/180/365d | same | rebuilt from the above |
-| `capture/books/` | 40MB | 169,282 order-book depth snapshots (top 5 levels, both sides, ~24k open markets) | **2026-07-15 → now** | **live: 4×/day via launchd** |
-| `state/candidates_today.json` | — | daily qualifying-market list with rulebook stamps | daily | **live: 13:15 daily** |
+| Store | Size | Rows | Purpose |
+|---|---:|---:|---|
+| `raw/series.parquet` | <1MB | 11,486 catalog rows | exchange catalog and deployment tier |
+| `raw/markets/` | 47MB | 2,733,070 settled deployment-tier markets | outcomes, timing, event/series, fees |
+| `raw/trades/` | 1.6GB | 47,342,026 fills in 380,660 traded markets | price, size, timestamp, aggressor side |
+| `derived/snapshots.parquet` | 2MB | 50,941 | legacy T−7/30/90/180/365d screen grid |
+| `derived/decision_points.parquet` | 21MB | 758,479 | outcome-free close/listing anchored research panel |
+| `derived/outcomes.parquet` | 3.8MB | 2,732,916 | isolated YES/NO resolutions |
+| `derived/market_relations.parquet` | derived | 2,732,916 | event membership for linked-contract analysis |
+| `capture/books/` | 52MB | growing | capture-only live depth; recorder began 2026-07-15 |
+| `capture/external_features/` | growing | point-in-time observations | Senate and EDGAR data with availability timestamps |
 
-Scale reference: the markets table represents ~6.17 billion contracts of
-lifetime volume — the full five-year economic history of every category in the
-deployment universe.
+The settled corpus covers 51,587 events, 3,579 series represented in the
+deployment market table, and about 6.17 billion contracts of lifetime volume.
+See `research/corpus-audit.md` for the category × year × duration census.
+
+## Timing correction and short-duration coverage
+
+`close_time` is the actual end of trading. `expiration_time` may be a later
+rescheduling ceiling and must not be used as the tradable boundary. Current API
+payloads provide actual settlement as `settlement_ts`, normalized at ingest to
+`settled_time`.
+
+The historical market parser previously discarded `settlement_ts`, so actual
+settlement is absent for the existing 2,733,070-market backfill. Close-anchored
+decision times remain trustworthy; exact post-close carry duration does not.
+This limitation is explicit in the audit and panel rather than silently filled.
+
+The trade backfill now includes every volume-positive deployment-tier market,
+including markets shorter than seven days. Coverage is complete for the target
+boundary: **332,515 / 332,515 traded markets shorter than six days have tape**.
+The old claim that short tape could not contribute to research is withdrawn.
 
 ## Deliberate scope boundaries
 
-- **Deployment tier only** for markets/trades (econ, politics, climate,
-  financials, world, companies, sci-tech, commodities, health). Sports and
-  crypto-ladder tape not pulled (planned as a *sampled* instrumentation
-  backfill); `KXMVE*` parlays excluded at ingest (~500k junk rows/day avoided).
-- **Trades only where they can matter**: markets that lived <7 days can never
-  contribute a snapshot at the shortest horizon, so their tape buys nothing.
-- Voided markets never appear under `status=settled` and are therefore absent —
-  void risk is a rulebook diligence item, not a data column.
+- Deployment categories are economics, climate/weather, politics, world,
+  companies, science/technology, commodities, health, financials, and the
+  existing elections corpus. Sports, parlays, and crypto remain excluded from
+  this build by decision.
+- The current relationship table proves shared-event membership. Historical
+  strike/title fields were not stored, so ordered ladder monotonicity needs a
+  metadata backfill before it can be tested honestly.
+- Voided or cancelled markets are absent from the settled-only history. They
+  must be captured prospectively; a settled-only feed cannot measure void risk.
+- Historical order books do not exist. Tape can support calibration and
+  fill-conditioned maker/taker claims, but only captured books and real fills
+  can support live spread and capacity claims.
 
-## The two kinds of data (the distinction that matters)
+## Backfillable versus capture-only
 
-**Backfillable** — markets, trades, candles-era prices. Kalshi serves the full
-history (`/historical/*` before the rolling cutoff, live endpoints after).
-Losing these costs a re-download, nothing more. Anyone can build this table;
-it is a commodity.
+Markets and trades are backfillable from Kalshi's public historical/live API
+boundary. Losing them costs download time. Decision points, outcomes, relations,
+coverage, and atlas outputs are deterministic derivatives.
 
-**Capture-only** — order-book depth. Kalshi serves only the *current* book;
-there is no historical endpoint. A book state not recorded when it existed is
-gone permanently. Our archive starts 2026-07-15 and is proprietary by
-construction: it exists only because we were recording when the moment passed.
-The same will be true of the candidate-list and edge-health time series.
+Order-book states are capture-only: an unrecorded historical book is gone.
+External observations are stored with `effective_at`, `available_at`, and
+`retrieved_at`; research joins on `available_at <= decision_time` to prevent
+look-ahead. A current public filing may be backfillable, but the exact point-in-
+time result of a changing search generally is not.
 
-## Cadence today, and what "real time" would mean
+## Cadence
 
-Current cadence is **batch, matched to decision speed**: books 4×/day,
-candidates 1×/day, settled-market corpus static pending the Track 1 build
-(daily incremental ingest + weekly edge recomputation). Nothing is streamed.
+- Daily: incremental markets/tape, candidates, Senate/EDGAR observations,
+  shadow book, portfolio read, dashboard.
+- Four times daily: current order-book capture.
+- Weekly: corpus audit, canonical research panel, registered atlas, legacy-cell
+  health diagnostics, dashboard.
 
-True real time is available if ever needed: Kalshi exposes websocket feeds
-(order-book deltas, trade prints). We deliberately don't consume them — the
-strategy enters once a day and holds for weeks, so intraday resolution changes
-no decision while adding an always-on process to babysit. The one future
-consumer would be a discovery screen that needs intraday microstructure (e.g.
-flow-shock reaction); the recorder's REST cadence can also simply be increased
-(launchd edit) long before websockets are justified.
-
-## Growth plan (from edge-program-plan.md Track 1)
-
-1. `ingest_incremental` daily: markets settled since the high-water mark + their
-   tape → corpus becomes append-only current.
-2. `edge_health` weekly: rolling edge per qualifying cell, calibration and
-   maker-taker drift, against pre-committed amber/red thresholds.
-3. Instrumentation-tier sampled tape (background) for cost-model precision.
+No websocket stream is needed for the current daily-entry, multi-day holding
+style. If an explicitly registered intraday hypothesis requires it, that would
+be a separate capture system and evidence boundary.

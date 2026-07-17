@@ -73,3 +73,12 @@ def test_confirmation_failure_blocks_qualification():
     )
     out = build_map(pl.DataFrame(rows))
     assert out.filter(pl.col("qualified"))["qualified"].len() == 0
+
+
+def test_thin_confirmation_period_cannot_qualify_on_zero_variance():
+    rows = (
+        _snaps("Econ", "10-20", 30, "discovery", 80, 0.30, "d")
+        + _snaps("Econ", "10-20", 30, "confirmation", 1, 0.30, "c")
+    )
+    out = build_map(pl.DataFrame(rows))
+    assert out.filter(pl.col("qualified"))["qualified"].len() == 0

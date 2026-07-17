@@ -1,10 +1,11 @@
 # Kalshi Market Structure Project
 
-Research and operations for a validated structural edge on the Kalshi exchange:
-resting NO-side maker orders against retail longshot flow in two qualified
-cells (Politics ~30d, Financials ~90d). Status: **live pilot; current orders and
-positions are shown on the local dashboard.** All deployment decisions belong
-to the operator.
+Research and operations for systematic Kalshi market-structure discovery.
+Corrected close-time anchoring and a registered 722-cell atlas leave **zero
+FDR-qualified historical cells**. The legacy Politics T−30d cell remains live
+monitored with insufficient early-fold support; Financials T−90d is withdrawn.
+Existing orders and positions are shown on the local dashboard, and research
+never changes them automatically. All deployment decisions belong to the operator.
 
 ## Repository map
 
@@ -20,8 +21,11 @@ to the operator.
 | `src/kalshi_data/core/` | client, field parsing, tier rules, **paths.py (single source of path truth)** |
 | `src/kalshi_data/ingest/` | series, markets, trades, daily incremental, book recorder |
 | `src/kalshi_data/analysis/` | screens, derived table, map, edge health |
+| `docs/research-system.md` | canonical panel, registry, atlas, validation and as-of feature contract |
+| `research/hypotheses.yaml` | pre-registered structural search space and gates |
 | `src/kalshi_data/operations/` | candidate list, shadow book, dashboard |
-| `src/kalshi_data/watchers/` | external-data tail watchers (congressional calendar, EDGAR) |
+| `src/kalshi_data/watchers/` | external-data tail watchers (congressional calendar) |
+| `src/kalshi_data/features/` | point-in-time external feature store and EDGAR adapter |
 | `ops/` | launchd plists (versioned; installed copies in ~/Library/LaunchAgents) |
 | `dashboard/index.html` | The operations dashboard (generated; bookmark it) |
 
@@ -31,6 +35,7 @@ to the operator.
 |---|---|---|
 | Raw | `data/raw/` (series, markets, trades) | re-downloadable from the API |
 | Capture | `data/capture/books/` | **impossible to backfill — guard it** |
+| External features | `data/capture/external_features/` | point-in-time as-of observations; some sources cannot be reconstructed exactly |
 | Derived | `data/derived/` | rebuilt from raw via `analysis.derive` |
 | State | `data/state/` (checkpoints, candidates, shadow book, edge history) | operational |
 
@@ -43,26 +48,32 @@ uv run python -m kalshi_data.operations.shadow_book  # update paper book
 uv run python -m kalshi_data.operations.dashboard    # regenerate dashboard
 uv run python -m kalshi_data.analysis.edge_health    # weekly grading (also scheduled)
 uv run python -m kalshi_data.analysis.phase3_map     # re-run the go/no-go map
+uv run python -m kalshi_data.analysis.corpus_audit   # coverage and timing-integrity audit
+uv run python -m kalshi_data.analysis.research_panel # decision points, outcomes, relationships
+uv run python -m kalshi_data.analysis.atlas          # registered structural search + FDR gate
+uv run python -m kalshi_data.features.edgar          # SEC registration observations for IPO candidates
 ```
 
 Full rebuild from nothing: `ingest.series` → `ingest.markets --tier deployment`
-→ `ingest.trades --tier deployment` → `analysis.derive`. Checkpointed, resumable.
+→ `ingest.trades --tier deployment --min-lifetime-days 0` → `analysis.derive`
+→ `analysis.corpus_audit` → `analysis.research_panel` → `analysis.atlas`.
+Checkpointed and resumable. Sports, parlays, and crypto remain outside this build.
 
 ## Automation (launchd)
 
 | Agent | Schedule | Chain |
 |---|---|---|
 | `com.exascale.kalshi-recorder` | 06:10 / 12:10 / 18:10 / 23:50 | book depth snapshots |
-| `com.exascale.kalshi-daily` | 13:15 | incremental ingest → candidates → shadow book → dashboard |
-| `com.exascale.kalshi-weekly` | Mon 14:00 | edge health → dashboard |
+| `com.exascale.kalshi-daily` | 13:15 | incremental ingest → candidates → Senate/EDGAR observations → shadow/portfolio → dashboard |
+| `com.exascale.kalshi-weekly` | Mon 14:00 | corpus audit → panel → atlas → legacy edge health → dashboard |
 | `com.exascale.kalshi-shadow` | every 4h (02:20…22:20) | shadow book fill check → dashboard |
 
 Install: `cp ops/*.plist ~/Library/LaunchAgents/ && launchctl load ~/Library/LaunchAgents/com.exascale.kalshi-*.plist`
 
 ## Standing rules
 
-- Maker-only, hold to settlement, 30–90d entry windows, UNSWEPT = untouchable,
-  RED rulebooks never trade.
+- No new cell is deployment-qualified. Existing live exposure remains an
+  operator decision; UNSWEPT is untouchable and RED rulebooks never trade.
 - Sizing: $250/position Politics, ×½ per AMBER cell light, ×½ per YELLOW
   rulebook, one position per event.
 - Nothing changes deployment rules without passing the map's qualification gate

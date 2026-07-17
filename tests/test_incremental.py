@@ -97,7 +97,7 @@ def test_same_day_rerun_merges_incremental_partitions(tmp_path, monkeypatch):
             assert path == "/markets"
             return iter([[market("KXCPI-NEW")]])
 
-    def fake_trades(client, ticker, open_time, end_time):
+    def fake_trades(client, ticker, open_time, end_time, **kwargs):
         return [
             {
                 "ticker": ticker,

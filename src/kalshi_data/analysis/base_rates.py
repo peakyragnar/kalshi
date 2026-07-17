@@ -1,8 +1,8 @@
-"""Family-level base rates for the two qualified cells (Track 3, pipeline 3).
+"""Family-level base rates for two legacy candidate cells (Track 3, pipeline 3).
 
-The map qualified two cells on their AVERAGE edge. An average can hide losing
-sub-populations. This audit cuts by series family and asks: how often did the
-tail actually fire vs what the market charged?
+The original map qualified two cells on their average edge. Correct close-time
+anchoring later withdrew Financials and left Politics under-supported. This
+audit remains a descriptive selection layer; it cannot qualify either cell.
 
 Two tiers, because power and precision trade off:
 
@@ -91,7 +91,7 @@ def _any(conds: list[pl.Expr]) -> pl.Expr:
 
 
 def cell_population(df: pl.DataFrame) -> pl.DataFrame:
-    """Tier 1: rows belonging to a qualified cell, as the map qualified it."""
+    """Tier 1: rows belonging to a legacy candidate cell under its old filters."""
     return df.filter(
         _any(
             [
@@ -276,7 +276,12 @@ def run() -> None:
         .sort("on_list_today", descending=True)
     )
 
-    lines = [f"# Family base rates in the qualified cells — {dt.date.today()}", ""]
+    lines = [f"# Family base rates in legacy candidate cells — {dt.date.today()}", ""]
+    lines.append(
+        "**Status.** Financials T−90 is withdrawn and Politics T−30 has "
+        "insufficient early-fold support. These labels are descriptive only."
+    )
+    lines.append("")
     lines.append(
         "**Honesty note.** Thresholds were written into the module before the "
         "first full run, but an exploratory preview on 2026-07-17 (looser "

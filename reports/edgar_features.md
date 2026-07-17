@@ -1,0 +1,37 @@
+# EDGAR IPO features — 2026-07-17
+
+- **FILED:S-1/A** KXDATABRICKS-DATE-26NOV01 — Databricks; form S-1/A; file 333-295145; filed 2026-05-11; https://www.sec.gov
+- **FILED:S-1/A** KXDATABRICKS-DATE-26OCT01 — Databricks; form S-1/A; file 333-295145; filed 2026-05-11; https://www.sec.gov
+- **FILED:S-1/A** KXFREDDIE-26NOV01 — Freddie Mac; form S-1/A; file 333-261116; filed 2021-11-19; https://www.sec.gov
+- **FILED:S-1/A** KXFREDDIE-26OCT01 — Freddie Mac; form S-1/A; file 333-261116; filed 2021-11-19; https://www.sec.gov
+- **FILED:S-1/A** KXIPOANDURIL-26NOV01 — Anduril; form S-1/A; file 333-296040; filed 2026-06-02; https://www.sec.gov
+- **FILED:S-1/A** KXIPOANDURIL-26OCT01 — Anduril; form S-1/A; file 333-296040; filed 2026-06-02; https://www.sec.gov
+- **FILED:S-1/A** KXIPOAPPSFLYER-26OCT01 — AppsFlyer; form S-1/A; file 333-264364; filed 2022-08-01; https://www.sec.gov
+- **FILED:S-1/A** KXIPOBEASTINDUSTRIES-26NOV01 — Beast Industries; form S-1/A; file 333-290932; filed 2026-01-21; https://www.sec.gov
+- **FILED:S-1/A** KXIPOBEASTINDUSTRIES-26OCT01 — Beast Industries; form S-1/A; file 333-290932; filed 2026-01-21; https://www.sec.gov
+- **FILED:S-1/A** KXIPOBREX-26NOV01 — Brex; form S-1/A; file 333-293881; filed 2026-05-26; https://www.sec.gov
+- **FILED:S-1/A** KXIPOBREX-26OCT01 — Brex; form S-1/A; file 333-293881; filed 2026-05-26; https://www.sec.gov
+- **FILED:S-1/A** KXIPOCANVA-DATE-26NOV01 — Canva; form S-1/A; file 333-293428; filed 2026-02-24; https://www.sec.gov
+- **FILED:S-1/A** KXIPOCANVA-DATE-26OCT01 — Canva; form S-1/A; file 333-293428; filed 2026-02-24; https://www.sec.gov
+- **NO_MATCH** KXIPOCLUELY-26NOV01 — No S-1/F-1 registration filing returned for exact query 'Cluely'; absence is not a CLEAR signal
+- **NO_MATCH** KXIPOCLUELY-26OCT01 — No S-1/F-1 registration filing returned for exact query 'Cluely'; absence is not a CLEAR signal
+- **FILED:F-1/A** KXIPODEEL-26NOV01 — Deel; form F-1/A; file 333-292572; filed 2026-01-20; https://www.sec.gov
+- **FILED:F-1/A** KXIPODEEL-26OCT01 — Deel; form F-1/A; file 333-292572; filed 2026-01-20; https://www.sec.gov
+- **FILED:S-1/A** KXIPOFANNIE-26NOV01 — Fannie Mae; form S-1/A; file 333-252024; filed 2021-01-21; https://www.sec.gov
+- **FILED:S-1/A** KXIPOFANNIE-26OCT01 — Fannie Mae; form S-1/A; file 333-252024; filed 2021-01-21; https://www.sec.gov
+- **FILED:S-1/A** KXIPOGLEAN-26OCT01 — Glean; form S-1/A; file 333-295322; filed 2026-05-11; https://www.sec.gov
+- **FILED:S-1/A** KXIPOOLIPOP-26NOV01 — Olipop; form S-1/A; file 333-290411; filed 2025-09-26; https://www.sec.gov
+- **FILED:S-1/A** KXIPOOLIPOP-26OCT01 — Olipop; form S-1/A; file 333-290411; filed 2025-09-26; https://www.sec.gov
+- **FILED:F-1/A** KXIPOOPENAI-26OCT01 — OpenAI; form F-1/A; file 333-297219; filed 2026-07-17; https://www.sec.gov
+- **FILED:F-1/A** KXIPORAMP-26NOV01 — Ramp; form F-1/A; file 333-290018; filed 2025-09-24; https://www.sec.gov
+- **FILED:F-1/A** KXIPORAMP-26OCT01 — Ramp; form F-1/A; file 333-290018; filed 2025-09-24; https://www.sec.gov
+- **FILED:S-1/A** KXIPORIPPLING-26NOV01 — Rippling; form S-1/A; file 333-263717; filed 2022-03-31; https://www.sec.gov
+- **FILED:S-1/A** KXIPORIPPLING-26OCT01 — Rippling; form S-1/A; file 333-263717; filed 2022-03-31; https://www.sec.gov
+- **FILED:S-1/A** KXIPOSKIMS-DATE-26NOV01 — Skims; form S-1/A; file 333-275051; filed 2023-10-23; https://www.sec.gov
+- **FILED:S-1/A** KXIPOSKIMS-DATE-26OCT01 — Skims; form S-1/A; file 333-275051; filed 2023-10-23; https://www.sec.gov
+- **FILED:S-1/A** KXIPOSTARLINK-26NOV01 — Starlink; form S-1/A; file 333-296070; filed 2026-06-03; https://www.sec.gov
+- **FILED:S-1/A** KXIPOSTARLINK-26OCT01 — Starlink; form S-1/A; file 333-296070; filed 2026-06-03; https://www.sec.gov
+- **FILED:S-1/A** KXIPOWHOOP-26OCT01 — WHOOP, Inc.; form S-1/A; file 333-279486; filed 2024-06-03; https://www.sec.gov
+- **FILED:S-1/A** KXSTRIPEIPO-26OCT01 — Stripe; form S-1/A; file 333-296437; filed 2026-07-14; https://www.sec.gov
+- **FILED:F-1/A** KXWAYMO-DATE-26NOV01 — Waymo; form F-1/A; file 333-294081; filed 2026-04-27; https://www.sec.gov
+- **FILED:F-1/A** KXWAYMO-DATE-26OCT01 — Waymo; form F-1/A; file 333-294081; filed 2026-04-27; https://www.sec.gov

@@ -8,7 +8,7 @@
     <array>
         <string>/bin/zsh</string>
         <string>-c</string>
-        <string>/opt/homebrew/bin/uv run --directory /Users/michael/Kalshi python -m kalshi_data.analysis.edge_health &amp;&amp; /opt/homebrew/bin/uv run --directory /Users/michael/Kalshi python -m kalshi_data.operations.dashboard</string>
+        <string>/opt/homebrew/bin/uv run --directory /Users/michael/Kalshi python -m kalshi_data.analysis.corpus_audit &amp;&amp; /opt/homebrew/bin/uv run --directory /Users/michael/Kalshi python -m kalshi_data.analysis.research_panel &amp;&amp; /opt/homebrew/bin/uv run --directory /Users/michael/Kalshi python -m kalshi_data.analysis.atlas &amp;&amp; /opt/homebrew/bin/uv run --directory /Users/michael/Kalshi python -m kalshi_data.analysis.edge_health &amp;&amp; /opt/homebrew/bin/uv run --directory /Users/michael/Kalshi python -m kalshi_data.operations.dashboard</string>
     </array>
     <key>StartCalendarInterval</key>
     <array>

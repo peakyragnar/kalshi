@@ -26,7 +26,7 @@ from .screens import cell_stats, prepare
 from ..core.paths import BOOKS, DERIVED, RESEARCH as REPORTS_DIR, SERIES, TRADES
 
 HURDLE = 0.07
-MIN_DISC_N = 50
+MIN_PERIOD_N = 50
 
 COARSE = {
     "01-5": "01-10", "05-10": "01-10",
@@ -58,7 +58,8 @@ def _period_stats(df: pl.DataFrame, cols: list[str]) -> pl.DataFrame:
 
 def _qualified() -> pl.Expr:
     return (
-        (pl.col("n_disc") >= MIN_DISC_N)
+        (pl.col("n_disc") >= MIN_PERIOD_N)
+        & (pl.col("n_conf") >= MIN_PERIOD_N)
         & ((pl.col("mean_disc") - 2 * pl.col("se_disc")) > HURDLE)
         & ((pl.col("mean_conf") - 2 * pl.col("se_conf")) > HURDLE)
     ).fill_null(False)
@@ -70,7 +71,7 @@ def build_map(df: pl.DataFrame) -> pl.DataFrame:
     df = df.with_columns(pl.col("bucket").replace_strict(COARSE, default=None).alias("coarse"))
 
     fine = _period_stats(df, ["category", "horizon_days", "bucket"])
-    fine_ok = fine.filter(pl.col("n_disc").fill_null(0) >= MIN_DISC_N).with_columns(
+    fine_ok = fine.filter(pl.col("n_disc").fill_null(0) >= MIN_PERIOD_N).with_columns(
         pl.lit("fine").alias("level")
     )
     rest1 = df.join(
@@ -80,7 +81,7 @@ def build_map(df: pl.DataFrame) -> pl.DataFrame:
     )
 
     merged = _period_stats(rest1, ["category", "horizon_days", "coarse"])
-    merged_ok = merged.filter(pl.col("n_disc").fill_null(0) >= MIN_DISC_N).with_columns(
+    merged_ok = merged.filter(pl.col("n_disc").fill_null(0) >= MIN_PERIOD_N).with_columns(
         pl.lit("merged").alias("level")
     )
     rest2 = rest1.join(
@@ -90,7 +91,7 @@ def build_map(df: pl.DataFrame) -> pl.DataFrame:
     )
 
     pooled = _period_stats(rest2, ["horizon_days", "coarse"]).with_columns(
-        pl.when(pl.col("n_disc").fill_null(0) >= MIN_DISC_N)
+        pl.when(pl.col("n_disc").fill_null(0) >= MIN_PERIOD_N)
         .then(pl.lit("pooled"))
         .otherwise(pl.lit("insufficient"))
         .alias("level"),
@@ -192,7 +193,7 @@ def run() -> None:
         f"pooled {len(rows.filter(pl.col('level')=='pooled'))}, "
         f"insufficient {len(rows.filter(pl.col('level')=='insufficient'))})."
     )
-    lines.append(f"\n**Qualifying cells: {len(q)}**  (rule: mean − 2·clustered SE > 7% in BOTH periods, n_disc ≥ 50)")
+    lines.append(f"\n**Qualifying cells: {len(q)}**  (rule: mean − 2·clustered SE > 7% and n ≥ 50 in BOTH periods)")
     lines.append("")
     lines.append("## Qualifying cells")
     show = [

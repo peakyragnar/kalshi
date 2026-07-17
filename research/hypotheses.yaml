@@ -1,0 +1,234 @@
+{
+  "version": 1,
+  "sealed_forward_start": "2026-07-17T00:00:00Z",
+  "hypotheses": [
+    {
+      "id": "structural-grid-v1",
+      "mechanism": "favorite-longshot bias, attention, and capital friction vary by category, price, and tradable horizon",
+      "kind": "cell_grid_no_maker",
+      "status": "registered",
+      "retroactive": false,
+      "contract": {
+        "universe": "deployment categories; sports, parlays, and crypto excluded",
+        "signal": "registered category x close-horizon x YES-price cell; take NO side",
+        "entry": "last public trade at the decision timestamp; calibration proxy, not an assumed fill",
+        "exit": "hold to settlement",
+        "fees": "series maker fee where fee_type requires it; zero otherwise",
+        "spread": "not reconstructable historically; live captured books required",
+        "carry": "3.25% APY over the trustworthy or scheduled hold",
+        "benchmark": "7% annualized net return",
+        "cluster_by": "event_ticker",
+        "validation": "early, middle, recent folds; BH FDR; outcomes from 2026-07-17 sealed forward",
+        "capacity": "not evaluated until the historical gate passes; then captured live depth only",
+        "tail_risk": "loss frequency plus top-10 event concentration in every fold"
+      },
+      "filters": {"max_staleness_fraction": 0.20},
+      "dimensions": {
+        "categories": ["Climate and Weather", "Commodities", "Companies", "Economics", "Elections", "Financials", "Health", "Politics", "Science and Technology", "World"],
+        "decision_labels": ["T-1h", "T-6h", "T-1d", "T-3d", "T-7d", "T-30d", "T-90d", "T-180d", "T-365d"],
+        "price_buckets": [[1, 5], [6, 10], [11, 20], [21, 40], [41, 60], [61, 80], [81, 95], [96, 99]]
+      },
+      "gate": {"hurdle": 0.07, "minimum_events": 50, "z": 2.0}
+    },
+    {
+      "id": "politics-30d-01-05-v1",
+      "mechanism": "low-probability political YES contracts are overpriced and resting NO makers absorb retail flow",
+      "kind": "cell_no_maker",
+      "status": "live_monitored",
+      "retroactive": true,
+      "contract": {
+        "universe": "Politics deployment markets",
+        "signal": "YES price 1-5 cents at T-30d; take NO side",
+        "entry": "last public trade at T-30d; resting maker execution required live",
+        "exit": "hold to settlement",
+        "fees": "series maker fee where applicable",
+        "spread": "historical spread unavailable; never assume midpoint execution",
+        "carry": "3.25% APY during hold",
+        "benchmark": "7% annualized net return",
+        "cluster_by": "event_ticker",
+        "validation": "three historical folds plus sealed forward; registered retroactively",
+        "capacity": "captured live depth and actual fills required",
+        "tail_risk": "event-clustered YES settlements and concentration"
+      },
+      "filters": {"categories": ["Politics"], "decision_labels": ["T-30d"], "yes_price_min": 1, "yes_price_max": 5, "max_staleness_fraction": 0.20},
+      "gate": {"hurdle": 0.07, "minimum_events": 50, "z": 2.0}
+    },
+    {
+      "id": "financials-90d-01-10-ex-ticket-v1",
+      "mechanism": "deep-tail financial YES contracts are overpriced outside sports-adjacent ticket-price series",
+      "kind": "cell_no_maker",
+      "status": "live_monitored",
+      "retroactive": true,
+      "contract": {
+        "universe": "Financials deployment markets excluding ticket-price series",
+        "signal": "YES price 1-10 cents at T-90d; take NO side",
+        "entry": "last public trade at T-90d; resting maker execution required live",
+        "exit": "hold to settlement",
+        "fees": "series maker fee where applicable",
+        "spread": "historical spread unavailable; never assume midpoint execution",
+        "carry": "3.25% APY during hold",
+        "benchmark": "7% annualized net return",
+        "cluster_by": "event_ticker",
+        "validation": "three historical folds plus sealed forward; registered retroactively",
+        "capacity": "captured live depth and actual fills required",
+        "tail_risk": "event-clustered YES settlements, especially correlated index strikes"
+      },
+      "filters": {
+        "categories": ["Financials"], "decision_labels": ["T-90d"], "yes_price_min": 1, "yes_price_max": 10,
+        "exclude_series": ["KXNBAFINALSPRICE", "KXWCPRICE", "KXNHLPRICE", "KXRTICKET", "KXDTICKET"],
+        "max_staleness_fraction": 0.20
+      },
+      "gate": {"hurdle": 0.07, "minimum_events": 50, "z": 2.0}
+    },
+    {
+      "id": "term-premium-v1",
+      "mechanism": "capital lockup alone creates a monotone increase in annualized edge",
+      "kind": "documented",
+      "status": "red",
+      "retroactive": true,
+      "contract": {
+        "universe": "deployment categories across close horizons",
+        "signal": "NO-side annualized return should increase monotonically with duration",
+        "entry": "registered close-horizon decision points",
+        "exit": "hold to settlement",
+        "fees": "maker-fee schedule",
+        "spread": "not modeled as executable historical depth",
+        "carry": "3.25% APY",
+        "benchmark": "shorter matched horizons and 7% hurdle",
+        "cluster_by": "event_ticker",
+        "validation": "corrected Screen B historical periods",
+        "capacity": "not applicable after RED verdict",
+        "tail_risk": "event-clustered uncertainty"
+      },
+      "filters": {},
+      "gate": {"hurdle": 0.07, "minimum_events": 50, "z": 2.0}
+    },
+    {
+      "id": "maker-taker-v1",
+      "mechanism": "resting makers receive favorable selection relative to crossing takers",
+      "kind": "documented",
+      "status": "historically_qualified",
+      "retroactive": true,
+      "contract": {
+        "universe": "deployment trade tape with at least one day remaining",
+        "signal": "resting-side fill return minus crossing-side fill return",
+        "entry": "actual historical fill side inferred from taker_side",
+        "exit": "hold to settlement",
+        "fees": "maker and taker fee schedules by series",
+        "spread": "comparison is fill-conditioned, not a reconstructed midpoint",
+        "carry": "excluded from side-to-side gap; common to both sides",
+        "benchmark": "maker minus taker greater than zero",
+        "cluster_by": "event_ticker",
+        "validation": "discovery and confirmation periods",
+        "capacity": "requires captured live depth despite historical gap",
+        "tail_risk": "broad maker return may remain negative even when relative gap is positive"
+      },
+      "filters": {},
+      "gate": {"hurdle": 0.0, "minimum_events": 50, "z": 2.0}
+    },
+    {
+      "id": "flow-shock-v1",
+      "mechanism": "large YES-aggressor shocks overshoot and subsequently revert",
+      "kind": "documented",
+      "status": "red",
+      "retroactive": true,
+      "contract": {
+        "universe": "deployment 1-19 cent YES longshots with 7-180 days remaining",
+        "signal": "first large YES-aggressor hourly volume shock",
+        "entry": "post-shock NO side at observed shock price",
+        "exit": "seven-day reversion diagnostic and hold to settlement economics",
+        "fees": "series maker-fee schedule",
+        "spread": "historical spread unavailable",
+        "carry": "3.25% APY in settlement return",
+        "benchmark": "matched category x price x horizon baseline and 7% absolute hurdle",
+        "cluster_by": "event_ticker",
+        "validation": "discovery and confirmation periods; precommit preserved",
+        "capacity": "not applicable after RED verdict",
+        "tail_risk": "absolute return, uplift, and event support gates"
+      },
+      "filters": {},
+      "gate": {"hurdle": 0.07, "minimum_events": 100, "z": 2.0}
+    },
+    {
+      "id": "listing-age-v1",
+      "mechanism": "newly listed markets may anchor inefficiently before information and liquidity accumulate",
+      "kind": "documented", "status": "untested", "retroactive": false,
+      "contract": {
+        "universe": "deployment markets with L+1d, L+7d, or L+30d decision points",
+        "signal": "registered listing-age x price cells", "entry": "last trade at listing anchor",
+        "exit": "hold to settlement", "fees": "maker-fee schedule", "spread": "live depth required",
+        "carry": "3.25% APY", "benchmark": "7% annualized net and matched close-horizon cells",
+        "cluster_by": "event_ticker", "validation": "not run; folds and FDR required",
+        "capacity": "not measured", "tail_risk": "not measured"
+      },
+      "filters": {}, "gate": {"hurdle": 0.07, "minimum_events": 50, "z": 2.0}
+    },
+    {
+      "id": "recurring-series-v1",
+      "mechanism": "persistent series-specific participant composition may create repeatable residual pricing",
+      "kind": "documented", "status": "untested", "retroactive": false,
+      "contract": {
+        "universe": "deployment recurring series", "signal": "registered series residual versus matched category cell",
+        "entry": "registered decision point", "exit": "hold to settlement", "fees": "maker-fee schedule",
+        "spread": "live depth required", "carry": "3.25% APY", "benchmark": "matched category x price x horizon",
+        "cluster_by": "event_ticker", "validation": "not run; folds and hierarchical search correction required",
+        "capacity": "not measured", "tail_risk": "not measured"
+      },
+      "filters": {}, "gate": {"hurdle": 0.07, "minimum_events": 50, "z": 2.0}
+    },
+    {
+      "id": "ladder-monotonicity-v1",
+      "mechanism": "ordered strikes may violate probability monotonicity",
+      "kind": "documented", "status": "untested", "retroactive": false,
+      "contract": {
+        "universe": "multi-strike deployment events", "signal": "higher strike priced above lower strike after costs",
+        "entry": "paired maker orders", "exit": "hold both legs to settlement", "fees": "both-leg fee schedule",
+        "spread": "both legs must be executable", "carry": "3.25% APY on collateral",
+        "benchmark": "non-negative monotonic ordering plus 7% annualized margin",
+        "cluster_by": "event_ticker", "validation": "blocked by missing historical strike metadata",
+        "capacity": "not measured", "tail_risk": "rulebook exhaustiveness and paired-fill risk"
+      },
+      "filters": {}, "gate": {"hurdle": 0.07, "minimum_events": 50, "z": 2.0}
+    },
+    {
+      "id": "linked-contract-lead-lag-v1",
+      "mechanism": "information may propagate slowly between related outcomes in the same event",
+      "kind": "documented", "status": "untested", "retroactive": false,
+      "contract": {
+        "universe": "linked deployment event outcomes", "signal": "registered lag after a related-contract move",
+        "entry": "post-trigger maker order", "exit": "fixed horizon or settlement", "fees": "maker-fee schedule",
+        "spread": "live depth required", "carry": "3.25% APY where held to settlement",
+        "benchmark": "matched non-trigger observations", "cluster_by": "event_ticker",
+        "validation": "blocked by incomplete historical relationship semantics",
+        "capacity": "not measured", "tail_risk": "simultaneous-event and paired-fill risk"
+      },
+      "filters": {}, "gate": {"hurdle": 0.07, "minimum_events": 50, "z": 2.0}
+    },
+    {
+      "id": "activity-staleness-flow-v1",
+      "mechanism": "activity, stale prices, and recent aggressor imbalance may condition structural mispricing",
+      "kind": "documented", "status": "untested", "retroactive": false,
+      "contract": {
+        "universe": "deployment decision panel", "signal": "predefined one- and two-dimensional activity/staleness/flow bins",
+        "entry": "registered decision point", "exit": "hold to settlement", "fees": "maker-fee schedule",
+        "spread": "live depth required", "carry": "3.25% APY", "benchmark": "matched base cell",
+        "cluster_by": "event_ticker", "validation": "not run; folds and expanded-search FDR required",
+        "capacity": "not measured", "tail_risk": "not measured"
+      },
+      "filters": {}, "gate": {"hurdle": 0.07, "minimum_events": 50, "z": 2.0}
+    },
+    {
+      "id": "resolution-objectivity-v1",
+      "mechanism": "judgment-heavy settlement language may command a risk premium or create avoidable losses",
+      "kind": "documented", "status": "untested", "retroactive": false,
+      "contract": {
+        "universe": "deployment markets with settlement-source and rule semantics", "signal": "objective versus judgment-heavy rule class",
+        "entry": "registered decision point", "exit": "hold to settlement", "fees": "maker-fee schedule",
+        "spread": "live depth required", "carry": "3.25% APY", "benchmark": "matched objective-rule contracts",
+        "cluster_by": "event_ticker", "validation": "blocked by missing historical rule metadata",
+        "capacity": "not measured", "tail_risk": "void and discretionary-settlement risk"
+      },
+      "filters": {}, "gate": {"hurdle": 0.07, "minimum_events": 50, "z": 2.0}
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 # Phase 1 coverage report
 
-Total settled markets ingested: **2,731,998**
+Total settled markets ingested: **2,733,070**
 
 ## Markets by tier x category x year
 | tier | category | year | markets | volume |
@@ -10,12 +10,12 @@ Total settled markets ingested: **2,731,998**
 | deployment | Climate and Weather | 2,023 | 7,578 | 6,389,705.0 |
 | deployment | Climate and Weather | 2,024 | 13,320 | 89,177,415.0 |
 | deployment | Climate and Weather | 2,025 | 26,352 | 232,779,978.0 |
-| deployment | Climate and Weather | 2,026 | 95,704 | 566,355,719.7 |
+| deployment | Climate and Weather | 2,026 | 96,176 | 568,606,271.08 |
 | deployment | Commodities | 2,022 | 864 | 1,092,191.0 |
 | deployment | Commodities | 2,023 | 2,824 | 1,094,604.0 |
 | deployment | Commodities | 2,024 | 3,825 | 597,585.0 |
 | deployment | Commodities | 2,025 | 3,579 | 1,675,317.0 |
-| deployment | Commodities | 2,026 | 29,444 | 134,312,644.23 |
+| deployment | Commodities | 2,026 | 30,044 | 134,411,843.93 |
 | deployment | Companies | 2,023 | 7 | 88,279.0 |
 | deployment | Companies | 2,024 | 18 | 74,115.0 |
 | deployment | Companies | 2,025 | 92 | 6,111,148.0 |
@@ -61,9 +61,9 @@ Total settled markets ingested: **2,731,998**
 | deployment | World | 2,026 | 29 | 473,048.96 |
 
 ## Activity filter (assumptions sheet section 4)
-- volume >= 1: 379,951 markets (13.9%)
-- volume >= 25: 254,423 markets (9.3%)
-- volume >= 100: 226,888 markets (8.3%)
+- volume >= 1: 380,660 markets (13.9%)
+- volume >= 25: 254,918 markets (9.3%)
+- volume >= 100: 227,303 markets (8.3%)
 
 ## Review-tier categories needing a mapping decision
 *(none)*

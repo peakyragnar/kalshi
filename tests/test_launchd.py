@@ -24,6 +24,7 @@ def test_daily_launchd_chain_has_each_module_once_in_order():
         "kalshi_data.ingest.incremental",
         "kalshi_data.operations.candidates",
         "kalshi_data.watchers.congressional",
+        "kalshi_data.features.edgar",
         "kalshi_data.operations.shadow_book",
         "kalshi_data.operations.portfolio",
         "kalshi_data.operations.dashboard",
@@ -42,6 +43,9 @@ def test_recurring_launchd_chains_cover_recorder_shadow_and_edge_health():
         "kalshi_data.operations.dashboard",
     ]
     assert modules(command("com.exascale.kalshi-weekly.plist")) == [
+        "kalshi_data.analysis.corpus_audit",
+        "kalshi_data.analysis.research_panel",
+        "kalshi_data.analysis.atlas",
         "kalshi_data.analysis.edge_health",
         "kalshi_data.operations.dashboard",
     ]

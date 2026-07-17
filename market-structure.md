@@ -7,66 +7,76 @@ evidence lands (forward settlements, recorder depth, live scans). This document
 records what the data supports — the deployment decision itself belongs to the
 operator and is gated by the Phase 3 map and the pre-committed kill rule.
 
-**Data basis (as of 2026-07-16):** 2.73M settled deployment-tier markets (2021→2026),
-46.3M fills with aggressor side, 430k price/outcome snapshots, order-book depth
+**Data basis (as of 2026-07-17):** 2.733M settled deployment-tier markets (2021→2026),
+47.342M fills with aggressor side, 50,941 correctly close-anchored snapshots,
+758,479 leakage-resistant decision points, and order-book depth
 recorder live since 2026-07-15. Full reports: `research/screen_a.md`, `screen_d.md`,
-`screen_b.md`, `coverage.md`.
+`screen_b.md`, `corpus-audit.md`, and `edge-atlas.md`.
+
+**Material timing correction, 2026-07-17.** Earlier screens anchored horizons to
+`max(close_time, expiration_time)`. Kalshi uses `close_time` for the actual end
+of trading; `expiration_time` may be a rescheduling ceiling a week later. All
+screens below were rebuilt on `close_time`. The Politics T−30 cell survives the
+economic correction but has insufficient early-fold support under the new atlas;
+the Financials T−90 qualification does not survive and is withdrawn. No live
+orders were changed automatically.
 
 ---
 
 ## Part 1 — Validated findings
 
-### F1. Long-dated YES is overpriced across the board; holding NO collects the gap
-At horizons ≥30d, realized settlement frequency sits below implied probability in
-every price bucket (e.g. 24¢ implied → 19.6% realized; 54¢ → 48.7%). The mirror:
-resting NO positions earn a positive gross spread everywhere. At T−7d the pattern
-is the classic S (longshots overpriced, favorites slightly underpriced); at ≥30d
-even favorites stop being cheap. *(Screen A)*
+### F1. Low-probability YES overpricing survives, but it is not universal
+At T−30d the 1–20¢ YES buckets settle below their implied probability in both
+periods (for example, confirmation 1–5¢: 2.09¢ implied versus 1.30% realized;
+10–20¢: 14.01¢ versus 12.61%). Other buckets and longer horizons flip sign.
+Holding NO therefore needs explicit category × horizon × price selection; there
+is no exchange-wide "buy NO" rule. *(Corrected Screen A)*
 
-### F2. The published anomaly is dead; the structural one survived
+### F2. Apparent anomalies decay and must replicate through time
 The academic "buy high-priced favorites" edge exists in pre-2025 data and is gone
-(slightly reversed) in the last 12 months. The longshot-side overpricing persists
-in the confirmation period with clustered errors well clear of zero. Easily
-harvested edges decay after publication; capital-intensive ones survive. *(Screen A,
-discovery/confirmation split)*
+(slightly reversed) in the last 12 months. Some longshot overpricing persists in
+aggregate, but the registered category × horizon × price search produced no
+FDR-qualified cell. Neither side is a universal rule; temporal replication and
+search correction are mandatory. *(Corrected Screen A; Edge atlas v1)*
 
-### F3. The bias is an average with sign flips — selection is mandatory
-Series where professional forecasters concentrate price the OTHER way: Fed
-decisions (+4.6pp), Payrolls (+7.5pp), GDP (+1.4pp) — fading YES there loses.
-Elections are arbed nearly flat (+2.9%/yr fill-weighted). The richest maker
-returns: Economics (+38%), Science/Tech (+34%), Politics (+21%) fill-weighted
-with carry. A discovery-period exclusion rule ("drop series that lost") improved
-confirmation-period returns — the selection idea survived out-of-sample. *(Screens
-A + D; series dot-plot)*
+### F3. The bias has large sign flips — selection is mandatory
+The systematic atlas tested 722 pre-registered category × horizon × price cells.
+Only Economics T−30d YES 11–20¢ passed all three folds before multiple-testing
+correction, and it failed the FDR gate (q=0.110). This is direct evidence that
+isolated high-return cells are easy to manufacture from the corpus. No new cell
+is promoted. This verdict applies to the executed grid, not the explicitly
+untested listing-age, recurring-series, ladder, lead/lag, conditional-flow, or
+rule-objectivity hypotheses. *(Edge atlas v1)*
 
-### F4. Makers beat takers everywhere — adverse selection favors the resting side
-Across 46.3M fills, the resting side out-returns the crossing side in every
-horizon bucket, both periods, by +8 to +31pp per fill. Kalshi's crossing flow in
-deployment categories is uninformed retail, not sharp flow. Maker fee is zero on
-98.9% of series (130 series charge; pull per-series). Getting filled is good
-news on this exchange. *(Screen D)*
+### F4. Makers beat takers everywhere — but that alone does not make maker returns positive
+Across 20.1M eligible fills, the resting side out-returns the crossing side in every
+horizon bucket and both periods, by roughly +1 to +26pp per fill. The gap is
+consistent with adverse selection against the crossing side, but it does not by
+itself identify who trades or why. Maker fee is zero on
+98.9% of series (130 series charge; pull per-series). However, broad longshot
+maker returns are negative in several horizons: better than taker is not the
+same as profitable. *(Corrected Screen D)*
 
 ### F5. There is NO term premium — the edge peaks at 30–90 days
-Annualized NO edge by entry horizon: ~+63%/yr pooled at T−30, roughly halved at
-T−90, ~zero at T−365. Confirmed at three identification levels including
-within-market (same contract entered earlier vs later). Duration is a cost, not
-a source: the per-hold discount grows too slowly with horizon to pay for the
-extra lockup. **Hold 30–90d, recycle capital; never extend past ~90d for yield.**
-*(Screen B)*
+Corrected pooled annualized NO return is largest at T−30 (~65% before carry) and
+does not rise monotonically: ~21% at T−90, ~33% at T−180, ~27% at T−365, all
+with wide event-clustered uncertainty. Within-market residuals tell the same
+directional story. Duration is not the source of edge; 3.25% carry only reduces
+the cost of waiting. *(Corrected Screen B)*
 
 ### F6. Returns are insurance-shaped; the edge is a portfolio property
-Target cell (resting NO vs YES at 1–20¢, ≥30d): ~90% of positions win small
-(≈ +5–6%/hold), ~10% lose everything. Mean +4.7%/hold on real maker fills.
-Losses cluster by event and by news cycle. No single position ever earns "the
-average" — only a diversified book held through the losers does. *(Screens A + D)*
+The surviving Politics T−30d 1–5¢ cell earns roughly 1.8–2.2% per historical
+hold, with observed tail-loss rates from 0% to 0.6% by fold. One YES settlement
+can still erase many small NO wins, and losses cluster by event. No single
+position earns the historical average; diversification remains essential.
+*(Edge atlas v1)*
 
-### F7. Capacity, not edge, is the open constraint
-Per dollar of flow actually absorbed, the target cell earned **+20.9%/yr with
-carry** (confirmation period, clears the 7%-at-2SE rule). Per *event* equal-
-weighted, **+5.4%/yr** — below the hurdle. Flow concentrates in liquid political/
-economic events (top-10 events ≈ 19% of fills). A real book lives between the
-two numbers, positioned by per-market depth — the recorder + map resolve this.
-*(Screen D robustness)*
+### F7. Statistical support now precedes capacity
+The new atlas promotes no cell, so it correctly does not run a capacity gate.
+For the live-monitored Politics cell, current economics are consistent but the
+early fold has only 26 independent events versus the registered minimum of 50.
+Capacity remains relevant only after a candidate clears that support and FDR
+gate. *(Edge atlas v1)*
 
 ### F8. Bracket "free money" is almost always a trap; genuine arbs are a
 side-dish at best
@@ -87,14 +97,15 @@ accrue?** (Assume no until Kalshi confirms — prices the cost of waiting for fi
 
 ---
 
-## Part 2 — The strategy the findings support (as tested, not as advised)
+## Part 2 — Current deployment interpretation (not an automatic instruction)
 
-The single strategy every screen converges on:
+After the timing correction, the evidence supports only this narrow posture:
 
-- **Position:** rest NO-side maker orders (never cross the spread) in markets
-  where YES trades at 1–20¢.
-- **Horizon:** enter 30–90 days before settlement. Recycle proceeds on
-  settlement. No positions past ~90d (F5).
+- **Position:** the only legacy cell still worth monitoring is Politics T−30d,
+  with YES at 1–5¢; use resting NO-side maker orders and never infer a broader
+  1–20¢ rule from pooled results.
+- **Horizon:** the existing Politics cell is T−30d. Duration itself is not an
+  edge and no blanket 30–90d rule survives the systematic atlas.
 - **Universe:** deployment categories (econ, climate, politics, world, companies,
   sci-tech, commodities, health) **minus** an exclusion list of professionally
   priced series (Fed, Payrolls, GDP class — formalized per-cell by the map) and
@@ -102,10 +113,10 @@ The single strategy every screen converges on:
   Phase 0).
 - **Diversification:** many small positions across unrelated events; losses
   cluster (F6), so event concentration is the primary portfolio risk.
-- **Expected shape if history repeats:** high win rate, occasional −100%
-  positions, net between ~5% and ~21%/yr including carry depending entirely on
-  how much size the flow supports (F7). The honest planning number until the
-  map says otherwise: low double digits at small size.
+- **Financials T−90:** withdrawn as a qualified cell after the timing correction;
+  no new entry should be inferred from the old memo. Existing orders/positions
+  require an operator decision and were not changed by research code.
+- **New discovery:** none. The 722-cell atlas produced zero FDR-qualified cells.
 
 **What would falsify it going forward:** the calibration gap closing in newly
 settled markets; maker-taker gap compressing (professionalizing flow); fill
@@ -113,30 +124,35 @@ rates collapsing. All three are tracked automatically (below).
 
 ---
 
-## Part 3 — Gates still closed before real money
+## Part 3 — Current gates
 
-1. **The Phase 3 map — PASSED 2026-07-16: GO, 2 qualifying cells** (`research/phase3_map.md`):
-   - **Politics · enter T−30d · YES 1–5¢** (rest NO at 95–99¢): discovery +30.4%/yr
-     (SE 1.6), confirmation +28.7%/yr (SE 3.5) — clears the 7%/2SE rule in both
-     periods by wide margins. ~$5.0M restable now across 617 open markets.
-   - **Financials · enter T−90d · YES 1–10¢**: +17.9% / +14.8%/yr, clears both
-     periods. ~$12.4M restable across 1,258 open markets.
-   - 15 near-misses (mostly Economics 30d mid-buckets, confirmation-positive but
-     discovery-negative per F2's favorite flip) — re-evaluate as forward data accrues.
-   - Remaining before deployment: Phase 4 memos on the two families.
-2. **Capacity estimates** — recorder has days, wants weeks. Improves automatically.
-3. **Escrowed-order carry** — one support ticket (F9).
-4. **Void charging** — void frequency by series charged into cell edges at map
-   time.
-5. **Forward validation** — ~24k open markets settle over coming months and
-   re-grade every finding on unseen data, cost-free.
+1. **Politics T−30d YES 1–5¢:** economic lower bounds clear 7% in early,
+   middle, and recent folds, but early support is 26 events versus the registered
+   50-event minimum. Status: **INSUFFICIENT SUPPORT / live monitored**, not a new
+   systematic qualification.
+2. **Financials T−90d YES 1–10¢ ex-ticket:** middle-fold lower bound is −13.1%
+   and the corrected legacy map also fails. Status: **RED / qualification withdrawn**.
+3. **Systematic atlas:** one pre-FDR survivor (Economics T−30d YES 11–20¢),
+   rejected at q=0.110. Status: **zero new edges**.
+4. **Forward validation:** observations from 2026-07-17 onward are sealed and
+   cannot be reused to invent gates.
+5. **Execution:** historical books remain unavailable; only captured books and
+   real fills can graduate a historically qualified edge to live execution.
 
 ## Part 4 — Standing infrastructure
 
 - Recorder: launchd `com.exascale.kalshi-recorder`, 4×/day, ~24k books/run.
 - Rebuild anything: `uv run python -m kalshi_data.{ingest_series,ingest_markets,
-  ingest_trades,derive,coverage,screen_a,screen_b,screen_d}`.
-- Tests: `uv run pytest` (29). Data: `data/` (gitignored, reproducible).
+  ingest_trades,derive,coverage,screen_a,screen_b,screen_d}`; discovery screens
+  live under `kalshi_data.analysis` (for example `flow_shock`).
+- Tests: `uv run pytest`. Data: `data/` (gitignored, reproducible).
+
+## Part 5 — Systematic discovery ledger
+
+| Screen | Verdict | Evidence | Consequence |
+|---|---|---|---|
+| Structural atlas v1 (`research/edge-atlas.md`) | **ZERO QUALIFIERS** | 722 registered cells; one passed all folds pre-FDR (Economics T−30d YES 11–20¢), then failed q=0.110. | No new cell; begin external-data work only as a selection layer or newly registered test. |
+| Flow-shock overshoot (`research/flow_shock.md`) | **RED** | Corrected timing: 3,217 shocks, median seven-day YES change −3¢ in both periods. Discovery reversion, absolute return, and uplift all fail the 2SE gate. | Do not add a pooled post-shock entry rule. |
 
 ## Change log
 - 2026-07-16: created after Screens A, B, D. Screen C production scan and the
@@ -171,3 +187,17 @@ rates collapsing. All three are tracked automatically (below).
   resolves empirically: ~$603 sits behind resting orders; the first monthly
   interest credit's accrual base answers it. Models stay pessimistic until then.
   No support ticket needed.
+- 2026-07-17: First Track-2 discovery screen completed. Flow-shock overshoot is
+  RED under its pre-committed cross-period gate: high median mean-reversion did
+  not translate into stable average or incremental NO returns. No deployment
+  rule changes. Definition and full result: `research/flow-shock-precommit.md`,
+  `research/flow_shock.md`.
+- 2026-07-17: Research-system audit corrected the tradable horizon from
+  `max(close_time, expiration_time)` to `close_time` and normalized
+  `settlement_ts`. Full short-duration tape now covers 332,515/332,515 traded
+  sub-six-day markets. Corrected corpus: 47,342,026 trades; 50,941 snapshots;
+  758,479 decision points.
+- 2026-07-17: Atlas v1 tested 722 registered cells across three historical
+  folds with event clustering and FDR. Zero qualified. Politics T−30 retains
+  strong economics but lacks early-fold support; Financials T−90 is RED and its
+  prior qualification is withdrawn. No live order was changed automatically.

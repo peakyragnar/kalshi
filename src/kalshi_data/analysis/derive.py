@@ -20,8 +20,10 @@ def build_snapshots(markets: pl.DataFrame, trades: pl.DataFrame) -> pl.DataFrame
     expiration_time plus metadata; trades has ticker/created_time/
     yes_price_cents/count with created_time parsed."""
     markets = markets.with_columns(
-        pl.max_horizontal("expiration_time", "close_time").alias("end_time"),
-        pl.coalesce(pl.col("settled_time"), pl.col("expiration_time"), pl.col("close_time")).alias(
+        # close_time is the last tradable instant. expiration_time may be a
+        # rescheduling ceiling a week later and must not anchor entry horizons.
+        pl.coalesce(pl.col("close_time"), pl.col("expiration_time")).alias("end_time"),
+        pl.coalesce(pl.col("settled_time"), pl.col("close_time"), pl.col("expiration_time")).alias(
             "resolve_time"
         ),
     )

@@ -32,8 +32,14 @@ MIN_N = 30
 TICKET = ["KXRTICKET", "KXDTICKET", "KXWCPRICE", "KXNHLPRICE", "KXNBAFINALSPRICE"]
 
 CELLS = {
-    "politics_30d": dict(category="Politics", horizon=30, p_lo=1, p_hi=4, baseline=0.287),
-    "financials_90d": dict(category="Financials", horizon=90, p_lo=1, p_hi=9, baseline=0.168),
+    "politics_30d": dict(
+        category="Politics", horizon=30, p_lo=1, p_hi=4, baseline=0.287,
+        atlas_status="INSUFFICIENT SUPPORT",
+    ),
+    "financials_90d": dict(
+        category="Financials", horizon=90, p_lo=1, p_hi=9, baseline=0.168,
+        atlas_status="RED / WITHDRAWN",
+    ),
 }
 
 
@@ -73,7 +79,10 @@ def run() -> dict:
     record: dict = {"ts": now.isoformat(timespec="seconds"), "cells": {}}
     for name, spec in CELLS.items():
         cell = cell_frame(df, spec)
-        entry: dict = {"baseline": spec["baseline"]}
+        entry: dict = {
+            "baseline": spec["baseline"],
+            "atlas_status": spec["atlas_status"],
+        }
         for window in (90, 365):
             sub = cell.filter(pl.col("resolve_ts") >= now - dt.timedelta(days=window))
             if len(sub) == 0:
@@ -106,13 +115,19 @@ def run() -> dict:
     with HISTORY.open("a") as f:
         f.write(json.dumps(record) + "\n")
 
-    lines = [f"# Edge health — {now:%Y-%m-%d}", ""]
+    lines = [
+        f"# Legacy-cell edge health — {now:%Y-%m-%d}", "",
+        "These trailing lights diagnose drift only. They do not override the "
+        "registered atlas status or qualify a cell for deployment.", "",
+    ]
     for name, e in record["cells"].items():
         t90, t365 = e["t90"], e["t365"]
         lines.append(
-            f"- **{name}**: {e['light']} — trailing-90d "
+            f"- **{name}**: atlas **{e['atlas_status']}**; trailing diagnostic "
+            f"**{e['light']}** — trailing-90d "
             f"{t90['mean']:+.1%} ± {t90['se']:.1%} (n={t90['n']})" if t90["mean"] is not None
-            else f"- **{name}**: {e['light']} — insufficient resolved snapshots in 90d window (n={t90['n']})"
+            else f"- **{name}**: atlas **{e['atlas_status']}**; trailing diagnostic "
+            f"**{e['light']}** — insufficient resolved snapshots in 90d window (n={t90['n']})"
         )
         if t365["mean"] is not None:
             lines.append(f"  - trailing-365d {t365['mean']:+.1%} ± {t365['se']:.1%} (n={t365['n']}) · baseline {e['baseline']:+.1%}")

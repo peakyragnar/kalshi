@@ -1,7 +1,9 @@
 # Edge Program — Work Plan (Phase 2 of the project)
 
-Successor to kalshi-market-structure-plan.md, which completed 2026-07-16 (GO: 2
-cells). Three tracks. Same disciplines as Phase 1: pre-committed hurdles,
+Successor to kalshi-market-structure-plan.md. The original 2026-07-16 GO was
+superseded on 2026-07-17 after correcting the trading boundary to `close_time`:
+Politics T−30 is insufficiently supported and Financials T−90 is RED. Three
+tracks. Same disciplines as Phase 1: pre-committed hurdles,
 discovery/confirmation splits, clustered errors, findings-book updates, and the
 operator makes all deployment decisions.
 
@@ -32,8 +34,8 @@ decision; real-time infrastructure would add cost and fragility, not information
 5. When live (Stage 2 of execution plan): fill-rate and realized-vs-modeled P&L
    join the same section from the read-only portfolio feed.
 
-**Deliverable:** two scheduled jobs + dashboard section + traffic-light rules
-committed. Effort ~2 days.
+**Status 2026-07-17:** delivered and scheduled. The traffic lights are legacy-
+cell drift diagnostics; they cannot restore a cell that fails the atlas gate.
 
 ## Track 2 — Systematic edge discovery (the pipeline of next edges)
 
@@ -50,8 +52,10 @@ week against the same kill discipline; survivors join the map.
    (Existing data; new snapshot grid anchored to close.)
 3. **New-listing mispricing** — first-week prices vs settlement; retail anchors
    badly on fresh markets? (Existing data; snapshots anchored to open_time.)
-4. **Flow-shock reaction** — after a taker-YES volume surge, do prices
-   overshoot? (Tape only.)
+4. **Flow-shock reaction — SCREENED 2026-07-17, RED.** After a taker-YES
+   volume surge, do prices overshoot? Median reversion was real but pooled
+   average and matched-return gates failed across periods; no rule promoted.
+   (`research/flow_shock.md`.)
 5. **Instrumentation-tier baselines** — ingest sampled sports/crypto tape;
    re-run A/D there. Not for deployment: sharpens the cost model and tests
    whether deployment-tier findings are exchange-wide or category-specific.
@@ -63,9 +67,12 @@ week against the same kill discipline; survivors join the map.
 listing-anchored snapshot grid; ladder-relationship table; Polymarket feed
 (later).
 
-**Deliverable cadence:** one screen/week, written up in the findings book,
-RED/GREEN verdict against the pre-committed hurdle. Most will die; that is the
-system working.
+**Status 2026-07-17:** canonical 758,479-row decision panel, isolated outcomes,
+event relationships, deterministic registry, three-fold atlas, FDR correction,
+and sealed-forward boundary delivered. Atlas v1 tested 722 cells: one survived
+the economic folds before FDR and none survived after FDR. Flow shock is RED.
+Ordered ladder testing remains honestly untested because historical strike/title
+metadata was not retained.
 
 ## Track 3 — Edge from data itself (layer 2: the fundamental layer)
 
@@ -96,9 +103,11 @@ colder. Selection is cheaper than prophecy and compounds with the existing edge.
    data qualifies them, NOAA/CPC pipelines slot in — infrastructure the
    operator's data business already runs.
 
-**Deliverable:** pipeline 1 and 2 as scheduled jobs annotating the daily
-candidate list (a `tail_signal` column: CLEAR / WARM / HOT / UNKNOWN); base-rate
-library as a background build.
+**Status 2026-07-17:** a point-in-time feature store with strict as-of joins is
+delivered. The Senate watcher writes candidate signals; EDGAR writes S-1/F-1
+observations and never converts `NO_MATCH` into a CLEAR trading signal. Both run
+daily. Base rates, options densities, and weather remain separate future tests,
+not implied findings.
 
 ## Sequencing (proposed)
 

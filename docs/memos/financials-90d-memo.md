@@ -1,5 +1,10 @@
 # Structure memo — Financials · enter T−90d · YES 1–10¢ (rest NO), ex-ticket
 
+> **Superseded 2026-07-17.** This memo used the old
+> `max(close_time, expiration_time)` horizon. The corrected close-anchored atlas
+> finds a middle-fold lower bound of −13.1%; this cell is RED and its prior
+> qualification is withdrawn. The text below is retained as an audit trail.
+
 **Cell qualification:** original merged cell +17.9%/+14.8%/yr. **Re-run excluding
 ticket-price series** (KXNBAFINALSPRICE, KXWCPRICE, KXNHLPRICE, KXRTICKET,
 KXDTICKET — sports-adjacent, recommend permanent exclusion per the no-sports

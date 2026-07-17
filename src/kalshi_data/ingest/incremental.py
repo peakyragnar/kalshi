@@ -23,7 +23,7 @@ import polars as pl
 from ..analysis import derive
 from . import series as ingest_series
 from ..core.client import KalshiClient
-from .trades import MIN_LIFETIME_DAYS, MIN_VOLUME, fetch_market_trades
+from .trades import MIN_LIFETIME_DAYS, MIN_VOLUME, fetch_market_trades, trade_cutoff
 from ..core.parse import market_row
 from ..core.tiers import classify
 
@@ -113,15 +113,18 @@ def run(rps: float = 8.0) -> None:
             pl.col("open_time").str.to_datetime(time_zone="UTC", strict=False),
             pl.col("close_time").str.to_datetime(time_zone="UTC", strict=False),
             pl.col("expiration_time").str.to_datetime(time_zone="UTC", strict=False),
-        ).with_columns(
-            pl.max_horizontal("expiration_time", "close_time").alias("end_time")
-        ).filter(
+        ).with_columns(pl.coalesce("close_time", "expiration_time").alias("end_time")).filter(
             (pl.col("volume") >= MIN_VOLUME)
             & ((pl.col("end_time") - pl.col("open_time")).dt.total_days() >= MIN_LIFETIME_DAYS)
         )
         trades: list[dict] = []
+        cutoff = trade_cutoff(client)
         for m in eligible.iter_rows(named=True):
-            trades.extend(fetch_market_trades(client, m["ticker"], m["open_time"], m["end_time"]))
+            trades.extend(
+                fetch_market_trades(
+                    client, m["ticker"], m["open_time"], m["end_time"], trade_cutoff=cutoff
+                )
+            )
         if trades:
             tdf = pl.DataFrame(trades, infer_schema_length=None).unique(subset="trade_id")
             tpath = TRADES / f"incr-{now:%Y%m%d}.parquet"

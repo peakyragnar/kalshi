@@ -32,3 +32,11 @@ def test_market_row_joins_series_metadata():
     assert row["tier"] == "deployment"
     assert row["last_price_cents"] == 3
     assert row["result"] == "no"
+
+
+def test_market_row_normalizes_current_settlement_timestamp_name():
+    row = market_row(
+        {"ticker": "M", "settlement_ts": "2026-07-17T11:00:00Z"},
+        {"ticker": "S"},
+    )
+    assert row["settled_time"] == "2026-07-17T11:00:00Z"

@@ -97,3 +97,16 @@ from Phase 1 day 1) × observed turnover at that cell. Cells ranked by edge × c
 - **2026-07-17:** APY corrected in prose from ~3.5% to **3.25%** (user correction);
   carry drag vs bills restated 26bps → ~51bps. All computed results were always
   produced with CARRY_APY = 0.0325 in code — prose-only correction, no numbers change.
+- **2026-07-17 (research-system audit):** corrected the historical decision
+  boundary from `max(close_time, expiration_time)` to **`close_time`**. Finalized
+  Kalshi payloads use `close_time` for the actual end of trading, while
+  `expiration_time` may be a rescheduling ceiling seven days later. Also
+  normalized the current API's `settlement_ts` field into stored
+  `settled_time`. This is a substantive data-timing correction; every derived
+  screen is rebuilt and prior findings are regraded rather than grandfathered.
+- **2026-07-17 (research-system expansion):** the trade universe now includes
+  every volume-positive deployment market regardless of lifetime, with new
+  close-anchored T−1h/6h/1d/3d decision points. Sports, parlays, and crypto
+  remain excluded by operator decision. Short-duration screens use the same
+  registered economic/statistical gate but are reported with per-hold returns
+  because annualization is mechanically unstable at intraday horizons.

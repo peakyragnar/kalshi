@@ -7,9 +7,9 @@ Data-availability facts (probed 2026-07-15):
   /markets/trades serves post-cutoff. Trades are therefore the primary price
   source for every era.
 
-Only markets with lifetime >= MIN_LIFETIME_DAYS are fetched: the shortest
-snapshot horizon is T-7d, so a market that lived less than ~a week can never
-contribute a snapshot row and its tape buys nothing.
+All traded deployment markets are fetched. Short-duration contracts feed the
+research panel's T-1h/T-6h/T-1d/T-3d decision points even though they cannot
+contribute to the legacy T-7d snapshot grid.
 """
 
 from __future__ import annotations
@@ -28,8 +28,8 @@ from ..core.paths import CHECKPOINTS, MARKETS, TRADES as TRADES_DIR
 CHECKPOINT = CHECKPOINTS / "trades_done.json"
 FLUSH_ROWS = 500_000
 
-CUTOFF = dt.datetime(2026, 5, 16, tzinfo=dt.timezone.utc)
-MIN_LIFETIME_DAYS = 6.0
+CUTOFF = dt.datetime(2026, 5, 16, tzinfo=dt.timezone.utc)  # outage fallback only
+MIN_LIFETIME_DAYS = 0.0
 MIN_VOLUME = 1.0
 
 
@@ -46,12 +46,17 @@ def trade_row(t: dict) -> dict:
 
 
 def fetch_market_trades(
-    client: KalshiClient, ticker: str, open_time: dt.datetime, end_time: dt.datetime
+    client: KalshiClient,
+    ticker: str,
+    open_time: dt.datetime,
+    end_time: dt.datetime,
+    trade_cutoff: dt.datetime | None = None,
 ) -> list[dict]:
+    trade_cutoff = trade_cutoff or CUTOFF
     endpoints = []
-    if open_time < CUTOFF:
+    if open_time < trade_cutoff:
         endpoints.append("/historical/trades")
-    if end_time >= CUTOFF:
+    if end_time >= trade_cutoff:
         endpoints.append("/markets/trades")
     seen: dict[str, dict] = {}
     for ep in endpoints:
@@ -63,20 +68,46 @@ def fetch_market_trades(
     return list(seen.values())
 
 
-def eligible_markets(tier: str) -> pl.DataFrame:
-    df = pl.read_parquet(MARKETS / "*.parquet")
+def trade_cutoff(client: KalshiClient) -> dt.datetime:
+    """Current API partition boundary; fallback preserves recoverability."""
+    try:
+        raw = client.get("/historical/cutoff").get("trades_created_ts")
+        if raw:
+            return dt.datetime.fromisoformat(raw.replace("Z", "+00:00"))
+    except Exception as exc:
+        print(f"historical cutoff unavailable ({exc}); using fallback {CUTOFF.isoformat()}")
+    return CUTOFF
+
+
+def eligible_markets_from_frame(
+    df: pl.DataFrame, tier: str, min_lifetime_days: float = MIN_LIFETIME_DAYS
+) -> pl.DataFrame:
     df = df.with_columns(
-        pl.col("open_time").str.to_datetime(time_zone="UTC", strict=False),
-        pl.col("close_time").str.to_datetime(time_zone="UTC", strict=False),
-        pl.col("expiration_time").str.to_datetime(time_zone="UTC", strict=False),
-    ).with_columns(
-        pl.max_horizontal("expiration_time", "close_time").alias("end_time")
-    )
+        _as_datetime(df, "open_time"),
+        _as_datetime(df, "close_time"),
+        _as_datetime(df, "expiration_time"),
+    ).with_columns(pl.coalesce("close_time", "expiration_time").alias("end_time"))
     return df.filter(
         (pl.col("tier") == tier)
         & (pl.col("volume") >= MIN_VOLUME)
-        & ((pl.col("end_time") - pl.col("open_time")).dt.total_days() >= MIN_LIFETIME_DAYS)
-    ).select("ticker", "open_time", "end_time")
+        & (
+            (pl.col("end_time") - pl.col("open_time")).dt.total_seconds()
+            >= min_lifetime_days * 86400
+        )
+    ).select("ticker", "open_time", "end_time").sort("ticker")
+
+
+def _as_datetime(df: pl.DataFrame, name: str) -> pl.Expr:
+    dtype = df.schema[name]
+    if dtype == pl.String:
+        return pl.col(name).str.to_datetime(time_zone="UTC", strict=False)
+    return pl.col(name).cast(pl.Datetime(time_zone="UTC"), strict=False)
+
+
+def eligible_markets(tier: str, min_lifetime_days: float = MIN_LIFETIME_DAYS) -> pl.DataFrame:
+    return eligible_markets_from_frame(
+        pl.read_parquet(MARKETS / "*.parquet"), tier, min_lifetime_days
+    )
 
 
 def _load_checkpoint() -> dict:
@@ -85,9 +116,10 @@ def _load_checkpoint() -> dict:
     return {"done": [], "part": 0}
 
 
-def run(tier: str, rps: float = 6.0) -> None:
-    markets = eligible_markets(tier)
+def run(tier: str, rps: float = 6.0, min_lifetime_days: float = MIN_LIFETIME_DAYS) -> None:
+    markets = eligible_markets(tier, min_lifetime_days)
     client = KalshiClient(rps=rps)
+    cutoff = trade_cutoff(client)
     state = _load_checkpoint()
     done = set(state["done"])
     todo = [m for m in markets.iter_rows(named=True) if m["ticker"] not in done]
@@ -95,7 +127,11 @@ def run(tier: str, rps: float = 6.0) -> None:
 
     pending: list[dict] = []
     for i, m in enumerate(todo):
-        pending.extend(fetch_market_trades(client, m["ticker"], m["open_time"], m["end_time"]))
+        pending.extend(
+            fetch_market_trades(
+                client, m["ticker"], m["open_time"], m["end_time"], trade_cutoff=cutoff
+            )
+        )
         state["done"].append(m["ticker"])
         if len(pending) >= FLUSH_ROWS:
             TRADES_DIR.mkdir(parents=True, exist_ok=True)
@@ -125,5 +161,6 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--tier", required=True, choices=["deployment", "instrumentation"])
     ap.add_argument("--rps", type=float, default=6.0)
+    ap.add_argument("--min-lifetime-days", type=float, default=MIN_LIFETIME_DAYS)
     args = ap.parse_args()
-    run(tier=args.tier, rps=args.rps)
+    run(tier=args.tier, rps=args.rps, min_lifetime_days=args.min_lifetime_days)

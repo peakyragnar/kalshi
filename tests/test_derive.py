@@ -123,3 +123,23 @@ def test_cumulative_volume_is_as_of_snapshot_not_total():
     t30 = out.filter(pl.col("horizon_days") == 30).row(0, named=True)
     assert t30["yes_price_cents"] == 55
     assert t30["cum_volume"] == 30.0
+
+
+def test_close_time_not_later_rescheduling_expiration_anchors_snapshot():
+    close = dt.datetime(2026, 3, 1, tzinfo=UTC)
+    markets = _markets(
+        [{
+            "ticker": "M5", "open_time": close - dt.timedelta(days=10),
+            "close_time": close, "expiration_time": close + dt.timedelta(days=7),
+            "result": "no",
+        }]
+    )
+    trades = _trades(
+        [
+            {"ticker": "M5", "created_time": close - dt.timedelta(days=8), "yes_price_cents": 10, "count": 1.0},
+            {"ticker": "M5", "created_time": close - dt.timedelta(days=1), "yes_price_cents": 90, "count": 1.0},
+        ]
+    )
+    t7 = build_snapshots(markets, trades).filter(pl.col("horizon_days") == 7).row(0, named=True)
+    assert t7["snap_ts"] == close - dt.timedelta(days=7)
+    assert t7["yes_price_cents"] == 10

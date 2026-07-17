@@ -1,5 +1,11 @@
 # Structure memo — Politics · enter T−30d · YES 1–5¢ (rest NO)
 
+> **Status update 2026-07-17.** Correct close-time anchoring preserves the
+> economics in all three historical folds, but the early fold has only 26
+> independent events versus the registered 50-event minimum. Status is
+> INSUFFICIENT SUPPORT / live monitored, not newly qualified. The original memo
+> remains below as an audit trail.
+
 **Cell qualification (Phase 3 map):** discovery +30.4%/yr (SE 1.6), confirmation
 +28.7%/yr (SE 3.5), both clear 7% at 2 clustered SE. Confirmation composition:
 366 snapshots, 216 events, **208 distinct series** — max single-series share 4%.

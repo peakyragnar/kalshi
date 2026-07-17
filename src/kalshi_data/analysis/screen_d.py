@@ -92,7 +92,7 @@ def load() -> pl.DataFrame:
             pl.col("close_time").str.to_datetime(time_zone="UTC", strict=False),
             pl.col("expiration_time").str.to_datetime(time_zone="UTC", strict=False),
         )
-        .with_columns(pl.max_horizontal("expiration_time", "close_time").alias("end_time"))
+        .with_columns(pl.coalesce("close_time", "expiration_time").alias("end_time"))
         .select("ticker", "event_ticker", "category", "fee_type", "result", "end_time")
         .collect()
     )
