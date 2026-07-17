@@ -153,8 +153,9 @@ def run() -> Path:
         rows.sort(key=lambda c: int(c["days_to_close"]))
         out = []
         for c in rows:
+            url = f"https://kalshi.com/markets/{c['series'].lower()}"
             out.append(
-                f"<tr><td class='mono'>{c['ticker']}</td><td>{c['title']}</td>"
+                f"<tr><td class='mono'><a href='{url}' style='color:var(--acc); text-decoration:none'>{c['ticker']}</a></td><td>{c['title']}</td>"
                 f"<td class='num'>{c['days_to_close']}</td><td class='num'>{c['yes_ask_c']}¢</td>"
                 f"<td class='num'>{c['rest_no_at_c']}¢</td><td>{chip(c['rulebook'])}</td></tr>"
             )
