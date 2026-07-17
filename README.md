@@ -54,6 +54,7 @@ Full rebuild from nothing: `ingest.series` → `ingest.markets --tier deployment
 | `com.exascale.kalshi-recorder` | 06:10 / 12:10 / 18:10 / 23:50 | book depth snapshots |
 | `com.exascale.kalshi-daily` | 13:15 | incremental ingest → candidates → shadow book → dashboard |
 | `com.exascale.kalshi-weekly` | Mon 14:00 | edge health → dashboard |
+| `com.exascale.kalshi-shadow` | every 4h (02:20…22:20) | shadow book fill check → dashboard |
 
 Install: `cp ops/*.plist ~/Library/LaunchAgents/ && launchctl load ~/Library/LaunchAgents/com.exascale.kalshi-*.plist`
 
