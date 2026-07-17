@@ -67,3 +67,17 @@ Install: `cp ops/*.plist ~/Library/LaunchAgents/ && launchctl load ~/Library/Lau
   and a findings-book entry.
 - Claude builds analysis and tooling; order execution and API credentials stay
   with the operator, permanently. All orders placed in Kalshi Pro, limit only.
+
+## The operations system (who does what, on what clock)
+
+| Layer | Actor | Trigger |
+|---|---|---|
+| Mechanical: ingest, candidates, watcher, shadow book, dashboard | launchd agents | 13:15 daily + recorder 4×/day + weekly Mon 14:00 |
+| Judgment: rulebook sweeps, signal review, anomaly triage, ops journal | **scheduled Claude session** (`kalshi-daily-ops`) | 14:11 daily |
+| Decisions: deployment rules, sizing, go/no-go, real orders | **Michael only** | on alerts or choice |
+
+The scheduled session runs while the desktop app is open (queued to next launch
+otherwise), reads this README + the findings book fresh each run, journals to
+`reports/ops-journal.md`, and surfaces OPERATOR ALERTS only when something
+genuinely needs a human: a HOT signal on a held market, a new RED rulebook, an
+edge-health light change, or an unfixable pipeline failure.
