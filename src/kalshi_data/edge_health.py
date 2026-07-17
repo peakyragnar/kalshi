@@ -120,6 +120,19 @@ def run() -> dict:
         if t365["mean"] is not None:
             lines.append(f"  - trailing-365d {t365['mean']:+.1%} ± {t365['se']:.1%} (n={t365['n']}) · baseline {e['baseline']:+.1%}")
     lines.append("")
+    lines.append("## Edge by resolution quarter (decay watch)")
+    for name, spec in CELLS.items():
+        cell = cell_frame(df, spec).with_columns(
+            (pl.col("resolve_ts").dt.year().cast(pl.String) + "-Q"
+             + pl.col("resolve_ts").dt.quarter().cast(pl.String)).alias("quarter")
+        )
+        trend = cell_stats(cell, ["quarter"], "ann_no_carry").filter(pl.col("n") >= 10).tail(8)
+        parts = [
+            f"{r['quarter']} {r['ann_no_carry_mean']:+.0%}±{r['ann_no_carry_se']:.0%}(n={r['n']})"
+            for r in trend.iter_rows(named=True)
+        ]
+        lines.append(f"- **{name}**: " + " · ".join(parts))
+    lines.append("")
     lines.append(f"- calibration gap (≥30d, resolved last 90d): {record['calibration_gap_t90']}")
     lines.append(f"- maker−taker gap (≥30d fills, last 90d): {record['maker_taker_gap_t90']} over {record['n_fills_t90']:,} fills")
     REPORTS_DIR.mkdir(exist_ok=True)
