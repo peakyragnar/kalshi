@@ -11,7 +11,16 @@ import datetime as dt
 import json
 from pathlib import Path
 
-from ..core.paths import BOOKS, CANDIDATES, CHECKPOINTS, DASHBOARD as OUT, EDGE_HISTORY, LOGS, SHADOW_BOOK
+from ..core.paths import (
+    BOOKS,
+    CANDIDATES,
+    CHECKPOINTS,
+    DASHBOARD as OUT,
+    EDGE_HISTORY,
+    LOGS,
+    SHADOW_BOOK,
+    STATE,
+)
 
 CELLS = [
     {"name": "Politics · T−30d · YES 1–5¢", "disc": "+30.4%", "conf": "+28.7%",
@@ -89,7 +98,30 @@ def health_checks() -> list[tuple[str, bool, str]]:
         checks.append(("edge grading", age_d <= 8, f"graded {age_d}d ago"))
     else:
         checks.append(("edge grading", False, "never run"))
+
+    ops = STATE / "ops_status.json"
+    if ops.exists():
+        rec = json.loads(ops.read_text())
+        age_h = (now - dt.datetime.fromisoformat(rec["ts"])).total_seconds() / 3600
+        checks.append(("ops pass", age_h < 30, f"{rec.get('status', '?')}, {age_h:.0f}h ago"))
+    else:
+        checks.append(("ops pass", False, "never run"))
     return checks
+
+
+def alert_banner_html() -> str:
+    ops = STATE / "ops_status.json"
+    if not ops.exists():
+        return ""
+    rec = json.loads(ops.read_text())
+    if rec.get("status") != "alerts" or not rec.get("alerts"):
+        return ""
+    items = "".join(f"<li>{a}</li>" for a in rec["alerts"])
+    return (
+        "<div style='background:#b3261e; color:#fff; border-radius:10px; padding:12px 16px; "
+        "margin-bottom:14px; font-size:14px;'><b>OPERATOR ALERTS — needs you</b>"
+        f"<ul style='margin:6px 0 0 18px'>{items}</ul></div>"
+    )
 
 
 def health_strip_html() -> str:
@@ -254,7 +286,7 @@ details summary {{ cursor:pointer; color:var(--mut); font-size:13px; }}
 <h1>Kalshi market structure — operations</h1>
 <div class="sub">generated {now} · data through latest settled feed · recorder: {rec_days} · deployment status: <b>diligence phase — no live positions</b></div>
 
-{health_strip_html()}
+{alert_banner_html()}{health_strip_html()}
 
 <div class="tiles">
   <div class="tile"><div class="v">2</div><div class="l">qualifying cells (of 58)</div></div>
