@@ -69,3 +69,10 @@ outlet decides. Acceptable; official-body sources remain preferable.
 
 Process note: candidate-backlog sweeps are the rolling daily chore; verdicts
 land in candidates.py sets and flow to the dashboard same-day.
+
+## Sweep 3 — 2026-07-17 afternoon (5 same-day listings)
+
+GREEN: KXALITOOUT, KXLEAVEWALZ (official-act departures), KXTRUMPDCTAKEOVER
+(formal invocation of a named statute). YELLOW: KXLEAVELISACOOK ("or announces"
+trigger). **RED: KXCBPAIRPORT** — "in response to sanctuary-jurisdiction
+noncooperation" is a causal-attribution condition; blacklisted.
