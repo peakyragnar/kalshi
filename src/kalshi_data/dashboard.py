@@ -116,6 +116,46 @@ def health_strip_html() -> str:
     )
 
 
+def shadow_book_html() -> str:
+    bf = DATA / "shadow_book.json"
+    if not bf.exists():
+        return "<p class='sub'>shadow book: not yet started</p>"
+    book = json.loads(bf.read_text())
+    s = book.get("stats", {})
+    tiles = (
+        f"<div class='tiles' style='margin-bottom:10px'>"
+        f"<div class='tile'><div class='v'>${s.get('deployed_usd',0):,.0f}</div><div class='l'>filled (paper), {s.get('deployed_pct',0)}% of book</div></div>"
+        f"<div class='tile'><div class='v'>${s.get('resting_usd',0):,.0f}</div><div class='l'>resting unfilled</div></div>"
+        f"<div class='tile'><div class='v'>${s.get('realized_usd',0):+,.2f}</div><div class='l'>realized P&L</div></div>"
+        f"<div class='tile'><div class='v'>${s.get('unrealized_usd',0):+,.2f}</div><div class='l'>unrealized at mark</div></div>"
+        f"</div>"
+    )
+    state_order = {"filled": 0, "partial": 1, "resting": 2, "settled": 3, "cancelled": 4}
+    rows = []
+    for o in sorted(book["orders"], key=lambda x: (state_order.get(x["state"], 9), x["ticker"])):
+        fill = f"{o['filled_qty']}/{o['qty']}"
+        pnl = ""
+        if o["state"] == "settled":
+            pnl = f"{o['realized_usd']:+,.2f} ({o['result']})"
+        elif o["filled_qty"] and o.get("mark_c") is not None:
+            pnl = f"{o['filled_qty'] * (o['mark_c'] - o['price_c']) / 100:+,.2f} @ mark {o['mark_c']}¢"
+        rows.append(
+            f"<tr><td class='mono'>{o['ticker']}</td><td>{o['title'][:44]}</td>"
+            f"<td class='num'>{o['price_c']}¢</td><td class='num'>{fill}</td>"
+            f"<td>{o['state']}</td><td class='num'>{pnl}</td></tr>"
+        )
+    table = (
+        "<table><tr><th>ticker</th><th>market</th><th>rest NO</th><th>filled</th><th>state</th><th>P&L</th></tr>"
+        + "".join(rows) + "</table>"
+    )
+    note = (
+        "<div class='sub' style='margin-top:6px'>PAPER ONLY — fills simulated as 50% of real prints at/through "
+        "our price (queue unknown); settlements and P&L are real outcomes. Started "
+        f"{book['created'][:10]}, updated {book.get('updated','—')[:16]}.</div>"
+    )
+    return tiles + table + note
+
+
 def edge_health_html() -> str:
     hist = DATA / "edge_health_history.jsonl"
     if not hist.exists():
@@ -215,6 +255,9 @@ details summary {{ cursor:pointer; color:var(--mut); font-size:13px; }}
   <div class="tile"><div class="v">1-in-10</div><div class="l">expected tail loss rate</div></div>
   <div class="tile"><div class="v">~15%/yr</div><div class="l">politics cell, pessimistic tail</div></div>
 </div>
+
+<h2>Shadow book — paper positions, real fills, real settlements</h2>
+{shadow_book_html()}
 
 <h2>Edge health (weekly, pre-committed lights: AMBER = halve entries, RED = stop)</h2>
 {edge_health_html()}
