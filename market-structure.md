@@ -166,3 +166,8 @@ rates collapsing. All three are tracked automatically (below).
   voiding proposed; residual risk = enumerated-activity edge cases (war-adjacent
   markets like Hormuz) and future listing supply. Operator's comfort call
   remains the gate. First real orders placed today: 11 resting, $603 committed.
+- 2026-07-17: Interest-program eligibility confirmed by operator (SSN on file,
+  qualifies). The escrow sub-question (does order-reserved cash accrue?) now
+  resolves empirically: ~$603 sits behind resting orders; the first monthly
+  interest credit's accrual base answers it. Models stay pessimistic until then.
+  No support ticket needed.
