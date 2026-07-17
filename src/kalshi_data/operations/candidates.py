@@ -6,7 +6,7 @@ Pipeline (market-structure.md Part 2 + rulebook-sweep selection rules):
   3. YES price band (from live book): Politics ask <= 5c; Financials ask <= 10c
   4. exclusions: RED rulebooks, ticket-price series, professionally-priced list
   5. emit: ticker, days, suggested NO rest price (= 100 - yes_ask, joining the
-     bid), book depth at that level, rulebook verdict if swept
+     bid), volume, and rulebook verdict if swept
 """
 
 from __future__ import annotations
@@ -34,6 +34,30 @@ BLACKLIST = RED | STRUCTURAL_EXCLUSIONS
 CELLS = {
     "Politics": {"window": (20, 45), "max_ask": 5},
     "Financials": {"window": (60, 120), "max_ask": 10},
+}
+
+CANDIDATE_COLUMNS = [
+    "category",
+    "series",
+    "ticker",
+    "title",
+    "days_to_close",
+    "yes_ask_c",
+    "rest_no_at_c",
+    "volume",
+    "rulebook",
+]
+
+CANDIDATE_SCHEMA = {
+    "category": pl.String,
+    "series": pl.String,
+    "ticker": pl.String,
+    "title": pl.String,
+    "days_to_close": pl.Int64,
+    "yes_ask_c": pl.Int64,
+    "rest_no_at_c": pl.Int64,
+    "volume": pl.Float64,
+    "rulebook": pl.String,
 }
 
 
@@ -71,7 +95,11 @@ def run(rps: float = 9.0) -> pl.DataFrame:
                         "rulebook": verdict,
                     }
                 )
-    df = pl.DataFrame(rows).sort(["category", "days_to_close"])
+    df = (
+        pl.DataFrame(rows).select(CANDIDATE_COLUMNS).sort(["category", "days_to_close"])
+        if rows
+        else pl.DataFrame(schema=CANDIDATE_SCHEMA)
+    )
     REPORTS_DIR.mkdir(exist_ok=True)
     stamp = f"{now:%Y-%m-%d}"
     lines = [f"# Candidate list — {stamp}", "",

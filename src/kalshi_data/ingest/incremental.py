@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import os
 
 import polars as pl
 
@@ -31,6 +32,21 @@ from ..core.paths import CHECKPOINTS, MARKETS, TRADES
 CHECKPOINT = CHECKPOINTS / "incremental.json"
 OVERLAP_HOURS = 48
 BACKFILL_END = "2026-07-15T00:00:00+00:00"
+
+
+def write_merged_partition(df: pl.DataFrame, path, key: str) -> pl.DataFrame:
+    """Atomically merge a same-day increment instead of replacing prior rows.
+
+    The daily filename is intentionally stable, so manual recovery runs and
+    launchd retries on the same UTC date must be idempotent.
+    """
+    if path.exists():
+        df = pl.concat([pl.read_parquet(path), df], how="diagonal_relaxed")
+    df = df.unique(subset=key, keep="last")
+    tmp = path.with_name(f".{path.name}.{os.getpid()}.tmp")
+    df.write_parquet(tmp)
+    tmp.replace(path)
+    return df
 
 
 def select_new_rows(
@@ -86,8 +102,12 @@ def run(rps: float = 8.0) -> None:
     if rows:
         df = pl.DataFrame(rows, infer_schema_length=None).unique(subset="ticker")
         path = MARKETS / f"incr-{now:%Y%m%d}.parquet"
-        df.write_parquet(path)
-        print(f"markets: +{len(df):,} -> {path.name}", flush=True)
+        n_new = len(df)
+        stored = write_merged_partition(df, path, "ticker")
+        print(
+            f"markets: +{n_new:,} ({len(stored):,} in today's partition) -> {path.name}",
+            flush=True,
+        )
 
         eligible = df.with_columns(
             pl.col("open_time").str.to_datetime(time_zone="UTC", strict=False),
@@ -105,8 +125,13 @@ def run(rps: float = 8.0) -> None:
         if trades:
             tdf = pl.DataFrame(trades, infer_schema_length=None).unique(subset="trade_id")
             tpath = TRADES / f"incr-{now:%Y%m%d}.parquet"
-            tdf.write_parquet(tpath)
-            print(f"trades: +{len(tdf):,} for {len(eligible):,} eligible markets -> {tpath.name}", flush=True)
+            n_new_trades = len(tdf)
+            stored_trades = write_merged_partition(tdf, tpath, "trade_id")
+            print(
+                f"trades: +{n_new_trades:,} ({len(stored_trades):,} in today's partition) "
+                f"for {len(eligible):,} eligible markets -> {tpath.name}",
+                flush=True,
+            )
     else:
         print("no new deployment markets in window", flush=True)
 

@@ -88,12 +88,17 @@ def update_fills_and_settlements(book: dict, client: KalshiClient) -> None:
         ):
             for t in page:
                 p = cents(t, "yes_price")
-                if p is not None and p <= max_yes:
+                # A resting NO maker is the opposite side of a YES aggressor.
+                # NO-aggressor prints filled a resting YES order and therefore
+                # cannot contribute to this order's queue or fill estimate.
+                if t.get("taker_side") == "yes" and p is not None and p <= max_yes:
                     printed += float(t.get("count") or t.get("count_fp") or 0)
         fillable = int(printed * FILL_SHARE)
         o["filled_qty"] = min(o["qty"], fillable)
-        if o["filled_qty"] > 0 and o["state"] == "resting":
+        if o["filled_qty"] > 0:
             o["state"] = "partial" if o["filled_qty"] < o["qty"] else "filled"
+        else:
+            o["state"] = "resting"
 
         m = client.get(f"/markets/{o['ticker']}").get("market", {})
         status = m.get("status")

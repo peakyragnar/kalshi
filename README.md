@@ -2,8 +2,9 @@
 
 Research and operations for a validated structural edge on the Kalshi exchange:
 resting NO-side maker orders against retail longshot flow in two qualified
-cells (Politics ~30d, Financials ~90d). Status: **diligence phase — shadow book
-running, no live positions.** All deployment decisions belong to the operator.
+cells (Politics ~30d, Financials ~90d). Status: **live pilot; current orders and
+positions are shown on the local dashboard.** All deployment decisions belong
+to the operator.
 
 ## Repository map
 
@@ -36,7 +37,7 @@ running, no live positions.** All deployment decisions belong to the operator.
 ## Operating the machine
 
 ```bash
-uv run pytest                                        # 41 tests
+uv run pytest                                        # full test suite
 uv run python -m kalshi_data.operations.candidates   # refresh candidate list (~5 min)
 uv run python -m kalshi_data.operations.shadow_book  # update paper book
 uv run python -m kalshi_data.operations.dashboard    # regenerate dashboard

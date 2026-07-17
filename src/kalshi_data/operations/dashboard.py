@@ -65,14 +65,6 @@ CELLS = [
      "bound": "+11.1%", "capacity": "$12.4M / 1,258 mkts", "role": "secondary"},
 ]
 
-OPEN_ITEMS = [
-    ("Escrow-carry support ticket", "user", "does resting-order collateral earn APY?"),
-    ("Regulatory posture read — political event contracts", "user", "before first dollars"),
-    ("Rulebook sweep of today's UNSWEPT candidates", "agent", "rolling daily chore"),
-    ("Screen C scanner on daily schedule", "agent", "two-week arb census"),
-    ("Forward-validation weekly job", "agent", "falsification tracker"),
-]
-
 FINDINGS = [
     ("F1", "Long-dated YES overpriced everywhere; NO collects"),
     ("F2", "Published favorite edge dead; longshot side survives"),
@@ -92,6 +84,25 @@ def recorder_status() -> tuple[str, str]:
     books = sorted(BOOKS.glob("books_*.jsonl"))
     day_files = len(books)
     return last, f"{day_files} day-files"
+
+
+def deployment_status() -> str:
+    """Summarize actual portfolio state instead of duplicating a stale phase label."""
+    pf = STATE / "portfolio.json"
+    if not pf.exists():
+        return "portfolio sync not yet run"
+    portfolio = json.loads(pf.read_text())
+    if not portfolio.get("available"):
+        return "portfolio not connected"
+    positions = len(portfolio.get("positions", []))
+    orders = len(portfolio.get("resting_orders", []))
+    if positions and orders:
+        return f"{positions} live positions · {orders} resting orders"
+    if positions:
+        return f"{positions} live positions · no resting orders"
+    if orders:
+        return f"{orders} live orders resting — no filled positions"
+    return "no live orders or positions"
 
 
 def chip(verdict: str, tooltip: str = "") -> str:
@@ -350,7 +361,7 @@ def run() -> Path:
     for c in cands:
         by_verdict[c["rulebook"]] = by_verdict.get(c["rulebook"], 0) + 1
 
-        verdicts = json.loads(RULEBOOK_VERDICTS.read_text()) if RULEBOOK_VERDICTS.exists() else {}
+    verdicts = json.loads(RULEBOOK_VERDICTS.read_text()) if RULEBOOK_VERDICTS.exists() else {}
     tail_ev = {}
     if TAIL_SIGNALS.exists():
         tail_ev = {t["ticker"]: t["evidence"] for t in json.loads(TAIL_SIGNALS.read_text())}
@@ -379,9 +390,6 @@ def run() -> Path:
         f"conservative bound {c['bound']}/yr · capacity {c['capacity']}</div></div>"
         for c in CELLS
     )
-    items_html = "".join(
-        f"<li><b>{t}</b> <span class='who'>[{who}]</span> — {note}</li>" for t, who, note in OPEN_ITEMS
-    )
     findings_html = "".join(f"<li><b>{k}</b> {v}</li>" for k, v in FINDINGS)
 
     html = f"""<!doctype html><html><head><meta charset="utf-8">
@@ -389,7 +397,7 @@ def run() -> Path:
 <title>Kalshi structure — operations dashboard</title>
 {STYLE}</head><body>
 <h1>Kalshi market structure — operations</h1>
-<div class="sub">generated {now} · data through latest settled feed · recorder: {rec_days} · deployment status: <b>diligence phase — no live positions</b></div>
+<div class="sub">generated {now} · data through latest settled feed · recorder: {rec_days} · deployment status: <b>{deployment_status()}</b></div>
 {NAV}
 
 {alert_banner_html()}{health_strip_html()}
@@ -421,9 +429,6 @@ def run() -> Path:
 <h2>Today's candidates — Financials ({fin_n})</h2>
 <table><tr><th>ticker</th><th>market</th><th>days</th><th>YES ask</th><th>rest NO at</th><th>rulebook</th></tr>
 {fin_rows}</table>
-
-<h2>Open items before deployment</h2>
-<ul>{items_html}</ul>
 
 <h2>Validated findings (details in market-structure.md)</h2>
 <ul>{findings_html}</ul>
