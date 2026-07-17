@@ -55,11 +55,13 @@ def run() -> None:
             "realized_usd": round(_cents(p.get("realized_pnl")), 2),
             "fees_usd": round(_cents(p.get("fees_paid")), 2),
         })
+    from ..core.parse import cents, quantity
+
     order_rows = [{
         "ticker": o.get("ticker"),
         "side": o.get("side"),
-        "price_c": o.get("no_price") if o.get("side") == "no" else o.get("yes_price"),
-        "resting": (o.get("remaining_count") or 0),
+        "price_c": cents(o, "no_price") if o.get("side") == "no" else cents(o, "yes_price"),
+        "resting": quantity(o, "remaining_count") or 0,
     } for o in orders]
 
     equity = round(cash + exposure, 2)
