@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.exascale.kalshi-recorder</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/opt/homebrew/bin/uv</string>
+        <string>run</string>
+        <string>--directory</string>
+        <string>/Users/michael/Kalshi</string>
+        <string>python</string>
+        <string>-m</string>
+        <string>kalshi_data.recorder</string>
+    </array>
+    <key>StartCalendarInterval</key>
+    <array>
+        <dict><key>Hour</key><integer>6</integer><key>Minute</key><integer>10</integer></dict>
+        <dict><key>Hour</key><integer>12</integer><key>Minute</key><integer>10</integer></dict>
+        <dict><key>Hour</key><integer>18</integer><key>Minute</key><integer>10</integer></dict>
+        <dict><key>Hour</key><integer>23</integer><key>Minute</key><integer>50</integer></dict>
+    </array>
+    <key>StandardOutPath</key>
+    <string>/Users/michael/Kalshi/logs/recorder.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/michael/Kalshi/logs/recorder.log</string>
+    <key>RunAtLoad</key>
+    <false/>
+</dict>
+</plist>
