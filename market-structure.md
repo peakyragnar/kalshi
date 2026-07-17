@@ -160,3 +160,9 @@ rates collapsing. All three are tracked automatically (below).
   n=70 — halved-entry rule applies). APY prose corrected to 3.25% (code was
   always 0.0325). Falsification metrics tracked: calibration gap −1.0pp,
   maker−taker gap +26.8pp (both alive).
+- 2026-07-17: Regulatory brief delivered (docs/regulatory-brief.md): political
+  contracts federally permitted (CFTC dropped appeal May 2025); June 2026
+  proposed rule classifies elections as contests not gaming; no retroactive
+  voiding proposed; residual risk = enumerated-activity edge cases (war-adjacent
+  markets like Hormuz) and future listing supply. Operator's comfort call
+  remains the gate. First real orders placed today: 11 resting, $603 committed.
