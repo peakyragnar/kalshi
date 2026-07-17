@@ -46,6 +46,8 @@ def place_from_candidates(book: dict) -> int:
     for c in cands:
         if c["rulebook"] != "GREEN":
             continue
+        if c.get("tail_signal") == "HOT":
+            continue
         ev = _event(c["ticker"])
         if ev in have_events:
             continue

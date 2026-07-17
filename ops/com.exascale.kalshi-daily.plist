@@ -8,7 +8,7 @@
     <array>
         <string>/bin/zsh</string>
         <string>-c</string>
-        <string>/opt/homebrew/bin/uv run --directory /Users/michael/Kalshi python -m kalshi_data.ingest.incremental &amp;&amp; /opt/homebrew/bin/uv run --directory /Users/michael/Kalshi python -m kalshi_data.operations.candidates &amp;&amp; /opt/homebrew/bin/uv run --directory /Users/michael/Kalshi python -m kalshi_data.operations.shadow_book &amp;&amp; /opt/homebrew/bin/uv run --directory /Users/michael/Kalshi python -m kalshi_data.operations.dashboard</string>
+        <string>/opt/homebrew/bin/uv run --directory /Users/michael/Kalshi python -m kalshi_data.ingest.incremental &amp;&amp; /opt/homebrew/bin/uv run --directory /Users/michael/Kalshi python -m kalshi_data.operations.candidates &amp;&amp; /opt/homebrew/bin/uv run --directory /Users/michael/Kalshi python -m kalshi_data.watchers.congressional; /opt/homebrew/bin/uv run --directory /Users/michael/Kalshi /opt/homebrew/bin/uv run --directory /Users/michael/Kalshi python -m kalshi_data.operations.shadow_book &amp;&amp; /opt/homebrew/bin/uv run --directory /Users/michael/Kalshi python -m kalshi_data.operations.dashboard</string>
     </array>
     <key>StartCalendarInterval</key>
     <array>

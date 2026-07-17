@@ -51,7 +51,8 @@ def recorder_status() -> tuple[str, str]:
 
 def chip(verdict: str) -> str:
     color = {"GREEN": "#0a7a33", "YELLOW": "#9a6b00", "AMBER": "#9a6b00",
-             "UNSWEPT": "#666", "THIN": "#666", "RED": "#b3261e"}[verdict]
+             "UNSWEPT": "#666", "THIN": "#666", "RED": "#b3261e",
+             "CLEAR": "#0a7a33", "WARM": "#9a6b00", "HOT": "#b3261e", "UNKNOWN": "#666"}[verdict]
     return f'<span class="chip" style="--c:{color}">{verdict}</span>'
 
 
@@ -202,7 +203,9 @@ def run() -> Path:
             out.append(
                 f"<tr><td class='mono'><a href='{url}' style='color:var(--acc); text-decoration:none'>{c['ticker']}</a></td><td>{c['title']}</td>"
                 f"<td class='num'>{c['days_to_close']}</td><td class='num'>{c['yes_ask_c']}¢</td>"
-                f"<td class='num'>{c['rest_no_at_c']}¢</td><td>{chip(c['rulebook'])}</td></tr>"
+                f"<td class='num'>{c['rest_no_at_c']}¢</td><td>{chip(c['rulebook'])}"
+                + (f" {chip(c['tail_signal'])}" if c.get("tail_signal") else "")
+                + "</td></tr>"
             )
         return "\n".join(out), len(rows)
 
