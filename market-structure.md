@@ -9,7 +9,7 @@ operator and is gated by the Phase 3 map and the pre-committed kill rule.
 
 **Data basis (as of 2026-07-16):** 2.73M settled deployment-tier markets (2021→2026),
 46.3M fills with aggressor side, 430k price/outcome snapshots, order-book depth
-recorder live since 2026-07-15. Full reports: `reports/screen_a.md`, `screen_d.md`,
+recorder live since 2026-07-15. Full reports: `research/screen_a.md`, `screen_d.md`,
 `screen_b.md`, `coverage.md`.
 
 ---
@@ -115,7 +115,7 @@ rates collapsing. All three are tracked automatically (below).
 
 ## Part 3 — Gates still closed before real money
 
-1. **The Phase 3 map — PASSED 2026-07-16: GO, 2 qualifying cells** (`reports/phase3_map.md`):
+1. **The Phase 3 map — PASSED 2026-07-16: GO, 2 qualifying cells** (`research/phase3_map.md`):
    - **Politics · enter T−30d · YES 1–5¢** (rest NO at 95–99¢): discovery +30.4%/yr
      (SE 1.6), confirmation +28.7%/yr (SE 3.5) — clears the 7%/2SE rule in both
      periods by wide margins. ~$5.0M restable now across 617 open markets.
@@ -143,13 +143,13 @@ rates collapsing. All three are tracked automatically (below).
   Phase 3 map are the open work items.
 - 2026-07-16 (later): Phase 3 map PASSED — GO with 2 qualifying cells
   (Politics 30d 1–5¢; Financials 90d 1–10¢). Phase 4 memos are the open item.
-- 2026-07-16 (later still): Phase 4 memos written (`memos/`). Financials cell
+- 2026-07-16 (later still): Phase 4 memos written (`docs/memos/`). Financials cell
   re-qualified ex-ticket-price series (+16.8%/yr conf, bound +11.1%). Both
   cells' single observed tail losses identified and analyzed (Trump vetoes;
   S&P all-time-high — the latter index-correlated). Politics = primary cell,
   Financials = secondary with index sub-cap recommendation. Open before
   deployment: rulebook reads, regulatory status check, escrow-carry answer.
-- 2026-07-16: Rulebook sweep complete (`reports/rulebook-sweep.md`): 36 series
+- 2026-07-16: Rulebook sweep complete (`research/rulebook-sweep.md`): 36 series
   read, 22 GREEN / 12 YELLOW / 2 RED (KXCRYPTOSTRUCTURE, KXTARIFFCHECKS —
   categorical/attribution judgment conditions, excluded). No discretionary
   settlement language found anywhere. New selection rule: prefer act-conditions

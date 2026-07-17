@@ -2,8 +2,8 @@ import datetime as dt
 
 import polars as pl
 
-from kalshi_data.screen_d import trade_economics
-from kalshi_data.screens import cell_stats, cluster_se
+from kalshi_data.analysis.screen_d import trade_economics
+from kalshi_data.analysis.screens import cell_stats, cluster_se
 
 UTC = dt.timezone.utc
 END = dt.datetime(2026, 3, 1, tzinfo=UTC)

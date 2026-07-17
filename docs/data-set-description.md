@@ -9,12 +9,12 @@ Kalshi's free public API via the commands in README.md.
 
 | Store | Size | Rows | Span | Grows |
 |---|---|---|---|---|
-| `series.parquet` | <1MB | 11,486 series — the full exchange catalog, tiered (deployment / instrumentation / excluded / review) | all-time | on re-run |
-| `markets/` | 47MB | 2,731,998 settled deployment-tier markets: outcome, timestamps, per-series fees | Jul 2021 → present | **static — daily incremental ingest is Track 1 of edge-program-plan.md (not yet built)** |
-| `trades/` | 1.5GB | 46,892,108 trades with price, size, timestamp, **aggressor side**, for the 376,557 markets that lived ≥7d and traded | Jun 2021 → Jul 2026 | same as markets |
+| `raw/series.parquet` | <1MB | 11,486 series — the full exchange catalog, tiered (deployment / instrumentation / excluded / review) | all-time | on re-run |
+| `raw/markets/` | 47MB | 2,731,998 settled deployment-tier markets: outcome, timestamps, per-series fees | Jul 2021 → present | **static — daily incremental ingest is Track 1 of edge-program-plan.md (not yet built)** |
+| `raw/trades/` | 1.5GB | 46,892,108 trades with price, size, timestamp, **aggressor side**, for the 376,557 markets that lived ≥7d and traded | Jun 2021 → Jul 2026 | same as markets |
 | `derived/snapshots.parquet` | 8MB | 429,761 rows: last price + staleness + cumulative volume + outcome at T−7/30/90/180/365d | same | rebuilt from the above |
-| `books/` | 40MB | 169,282 order-book depth snapshots (top 5 levels, both sides, ~24k open markets) | **2026-07-15 → now** | **live: 4×/day via launchd** |
-| `candidates_today.json` | — | daily qualifying-market list with rulebook stamps | daily | **live: 13:15 daily** |
+| `capture/books/` | 40MB | 169,282 order-book depth snapshots (top 5 levels, both sides, ~24k open markets) | **2026-07-15 → now** | **live: 4×/day via launchd** |
+| `state/candidates_today.json` | — | daily qualifying-market list with rulebook stamps | daily | **live: 13:15 daily** |
 
 Scale reference: the markets table represents ~6.17 billion contracts of
 lifetime volume — the full five-year economic history of every category in the

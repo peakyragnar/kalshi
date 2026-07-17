@@ -2,7 +2,7 @@ import math
 
 import polars as pl
 
-from kalshi_data.screens import bucket_label, cluster_se, maker_fee_cents, taker_fee_cents
+from kalshi_data.analysis.screens import bucket_label, cluster_se, maker_fee_cents, taker_fee_cents
 
 
 def test_taker_fee_matches_published_examples():

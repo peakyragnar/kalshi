@@ -1,6 +1,6 @@
 import httpx
 
-from kalshi_data.client import KalshiClient
+from kalshi_data.core.client import KalshiClient
 
 
 def _client_with(handler):

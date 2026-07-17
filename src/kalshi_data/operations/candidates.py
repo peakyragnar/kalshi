@@ -12,15 +12,13 @@ Pipeline (market-structure.md Part 2 + rulebook-sweep selection rules):
 from __future__ import annotations
 
 import datetime as dt
-from pathlib import Path
 
 import polars as pl
 
-from .client import KalshiClient
-from .parse import cents
+from ..core.client import KalshiClient
+from ..core.parse import cents
 
-DATA_DIR = Path(__file__).resolve().parents[2] / "data"
-REPORTS_DIR = Path(__file__).resolve().parents[2] / "reports"
+from ..core.paths import CANDIDATES, REPORTS as REPORTS_DIR, SERIES
 
 BLACKLIST = {
     "KXCRYPTOSTRUCTURE", "KXTARIFFCHECKS",                       # RED rulebooks
@@ -78,7 +76,7 @@ CELLS = {
 
 
 def run(rps: float = 9.0) -> pl.DataFrame:
-    series = pl.read_parquet(DATA_DIR / "series.parquet").filter(
+    series = pl.read_parquet(SERIES).filter(
         (pl.col("tier") == "deployment") & pl.col("category").is_in(list(CELLS))
     )
     client = KalshiClient(rps=rps)
@@ -124,7 +122,7 @@ def run(rps: float = 9.0) -> pl.DataFrame:
     for row in df.iter_rows():
         lines.append("| " + " | ".join(str(v) for v in row) + " |")
     (REPORTS_DIR / "candidates_today.md").write_text("\n".join(lines))
-    df.write_json(DATA_DIR / "candidates_today.json")
+    df.write_json(CANDIDATES)
     print(f"candidates: {len(df)} -> reports/candidates_today.md + data/candidates_today.json")
     return df
 

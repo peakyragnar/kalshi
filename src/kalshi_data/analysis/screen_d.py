@@ -13,14 +13,12 @@ on quadratic_with_maker_fees series (25% of taker, ceil'd).
 
 from __future__ import annotations
 
-from pathlib import Path
 
 import polars as pl
 
 from .screens import cell_stats
 
-DATA_DIR = Path(__file__).resolve().parents[2] / "data"
-REPORTS_DIR = Path(__file__).resolve().parents[2] / "reports"
+from ..core.paths import MARKETS, TRADES, RESEARCH as REPORTS_DIR
 DISCOVERY_END = "2025-07-01"
 
 
@@ -87,7 +85,7 @@ def trade_economics(trades: pl.DataFrame, markets: pl.DataFrame) -> pl.DataFrame
 
 def load() -> pl.DataFrame:
     markets = (
-        pl.scan_parquet(DATA_DIR / "markets" / "*.parquet")
+        pl.scan_parquet(MARKETS / "*.parquet")
         .select("ticker", "event_ticker", "category", "fee_type", "result",
                 "close_time", "expiration_time")
         .with_columns(
@@ -99,7 +97,7 @@ def load() -> pl.DataFrame:
         .collect()
     )
     trades = (
-        pl.scan_parquet(DATA_DIR / "trades" / "*.parquet")
+        pl.scan_parquet(TRADES / "*.parquet")
         .select("ticker", "created_time", "yes_price_cents", "taker_side")
         .with_columns(pl.col("created_time").str.to_datetime(time_zone="UTC", strict=False))
         .collect()

@@ -2,7 +2,7 @@ import datetime as dt
 
 import polars as pl
 
-from kalshi_data.derive import build_snapshots
+from kalshi_data.analysis.derive import build_snapshots
 
 UTC = dt.timezone.utc
 

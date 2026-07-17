@@ -8,11 +8,10 @@ volume; joined to settlement outcome and fee metadata.
 
 from __future__ import annotations
 
-from pathlib import Path
 
 import polars as pl
 
-DATA_DIR = Path(__file__).resolve().parents[2] / "data"
+from ..core.paths import DERIVED, MARKETS, TRADES
 HORIZONS_DAYS = (7, 30, 90, 180, 365)
 
 
@@ -84,7 +83,7 @@ def build_snapshots(markets: pl.DataFrame, trades: pl.DataFrame) -> pl.DataFrame
 
 def run() -> None:
     markets = (
-        pl.read_parquet(DATA_DIR / "markets" / "*.parquet")
+        pl.read_parquet(MARKETS / "*.parquet")
         .filter(pl.col("result").is_in(["yes", "no"]))
         .with_columns(
             pl.col("open_time").str.to_datetime(time_zone="UTC", strict=False),
@@ -94,11 +93,11 @@ def run() -> None:
         )
     )
     trades = pl.read_parquet(
-        DATA_DIR / "trades" / "*.parquet",
+        TRADES / "*.parquet",
         columns=["ticker", "created_time", "yes_price_cents", "count"],
     ).with_columns(pl.col("created_time").str.to_datetime(time_zone="UTC", strict=False))
     snaps = build_snapshots(markets, trades)
-    out = DATA_DIR / "derived"
+    out = DERIVED
     out.mkdir(parents=True, exist_ok=True)
     snaps.write_parquet(out / "snapshots.parquet")
     print(f"derived: {len(snaps):,} snapshot rows -> {out / 'snapshots.parquet'}")

@@ -2,14 +2,12 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 
 import polars as pl
 
 from .screens import cells, prepare
 
-DATA_DIR = Path(__file__).resolve().parents[2] / "data"
-REPORTS_DIR = Path(__file__).resolve().parents[2] / "reports"
+from ..core.paths import DERIVED, TRADES, RESEARCH as REPORTS_DIR
 
 
 def _md(df: pl.DataFrame) -> list[str]:
@@ -21,9 +19,9 @@ def _md(df: pl.DataFrame) -> list[str]:
 
 
 def run() -> None:
-    snapshots = pl.read_parquet(DATA_DIR / "derived" / "snapshots.parquet")
+    snapshots = pl.read_parquet(DERIVED / "snapshots.parquet")
     trade_counts = (
-        pl.scan_parquet(DATA_DIR / "trades" / "*.parquet")
+        pl.scan_parquet(TRADES / "*.parquet")
         .group_by("ticker")
         .agg(pl.len().alias("n_trades"))
         .collect()

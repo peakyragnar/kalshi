@@ -11,16 +11,15 @@ from __future__ import annotations
 
 import argparse
 import json
-from pathlib import Path
 
 import polars as pl
 
-from .client import KalshiClient
-from .parse import market_row
+from ..core.client import KalshiClient
+from ..core.parse import market_row
 
-DATA_DIR = Path(__file__).resolve().parents[2] / "data"
-MARKETS_DIR = DATA_DIR / "markets"
-CHECKPOINT = DATA_DIR / "checkpoints" / "markets_done.json"
+from ..core.paths import CHECKPOINTS, MARKETS as MARKETS_DIR, SERIES
+
+CHECKPOINT = CHECKPOINTS / "markets_done.json"
 FLUSH_ROWS = 150_000
 
 ENDPOINTS = ("/markets", "/historical/markets")
@@ -62,7 +61,7 @@ def fetch_series_markets(client: KalshiClient, series_meta: dict) -> list[dict]:
 
 
 def run(tier: str, rps: float = 6.0) -> None:
-    series = pl.read_parquet(DATA_DIR / "series.parquet").filter(pl.col("tier") == tier)
+    series = pl.read_parquet(SERIES).filter(pl.col("tier") == tier)
     client = KalshiClient(rps=rps)
     state = _load_checkpoint()
     done = set(state["done"])

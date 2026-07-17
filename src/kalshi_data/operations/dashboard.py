@@ -11,9 +11,7 @@ import datetime as dt
 import json
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[2]
-DATA = ROOT / "data"
-OUT = ROOT / "dashboard"
+from ..core.paths import BOOKS, CANDIDATES, CHECKPOINTS, DASHBOARD as OUT, EDGE_HISTORY, LOGS, SHADOW_BOOK
 
 CELLS = [
     {"name": "Politics · T−30d · YES 1–5¢", "disc": "+30.4%", "conf": "+28.7%",
@@ -44,9 +42,9 @@ FINDINGS = [
 
 
 def recorder_status() -> tuple[str, str]:
-    log = ROOT / "logs" / "recorder.log"
+    log = LOGS / "recorder.log"
     last = log.read_text().strip().splitlines()[-1] if log.exists() else "no runs yet"
-    books = sorted((DATA / "books").glob("books_*.jsonl"))
+    books = sorted(BOOKS.glob("books_*.jsonl"))
     day_files = len(books)
     return last, f"{day_files} day-files"
 
@@ -62,13 +60,13 @@ def health_checks() -> list[tuple[str, bool, str]]:
     now = dt.datetime.now(dt.timezone.utc)
     checks = []
 
-    todays_books = DATA / "books" / f"books_{now:%Y%m%d}.jsonl"
-    yesterdays = DATA / "books" / f"books_{(now - dt.timedelta(days=1)):%Y%m%d}.jsonl"
+    todays_books = BOOKS / f"books_{now:%Y%m%d}.jsonl"
+    yesterdays = BOOKS / f"books_{(now - dt.timedelta(days=1)):%Y%m%d}.jsonl"
     ok = todays_books.exists() or (now.hour < 8 and yesterdays.exists())
     detail = "today's file present" if todays_books.exists() else "no snapshot yet today"
     checks.append(("recorder", ok, detail))
 
-    ckpt = DATA / "checkpoints" / "incremental.json"
+    ckpt = CHECKPOINTS / "incremental.json"
     if ckpt.exists():
         hw = dt.datetime.fromisoformat(json.loads(ckpt.read_text())["high_water"])
         age_h = (now - hw).total_seconds() / 3600
@@ -76,14 +74,14 @@ def health_checks() -> list[tuple[str, bool, str]]:
     else:
         checks.append(("settled ingest", False, "never run"))
 
-    cands = DATA / "candidates_today.json"
+    cands = CANDIDATES
     if cands.exists():
         age_h = (now - dt.datetime.fromtimestamp(cands.stat().st_mtime, dt.timezone.utc)).total_seconds() / 3600
         checks.append(("candidates", age_h < 30, f"refreshed {age_h:.0f}h ago"))
     else:
         checks.append(("candidates", False, "never run"))
 
-    hist = DATA / "edge_health_history.jsonl"
+    hist = EDGE_HISTORY
     if hist.exists():
         last = json.loads(hist.read_text().strip().splitlines()[-1])
         age_d = (now - dt.datetime.fromisoformat(last["ts"])).days
@@ -117,7 +115,7 @@ def health_strip_html() -> str:
 
 
 def shadow_book_html() -> str:
-    bf = DATA / "shadow_book.json"
+    bf = SHADOW_BOOK
     if not bf.exists():
         return "<p class='sub'>shadow book: not yet started</p>"
     book = json.loads(bf.read_text())
@@ -164,7 +162,7 @@ def shadow_book_html() -> str:
 
 
 def edge_health_html() -> str:
-    hist = DATA / "edge_health_history.jsonl"
+    hist = EDGE_HISTORY
     if not hist.exists():
         return "<p class='sub'>edge health: not yet run</p>"
     rec = json.loads(hist.read_text().strip().splitlines()[-1])
@@ -188,7 +186,7 @@ def edge_health_html() -> str:
 
 
 def run() -> Path:
-    cands = json.loads((DATA / "candidates_today.json").read_text())
+    cands = json.loads((CANDIDATES).read_text())
     rec_last, rec_days = recorder_status()
     now = dt.datetime.now().strftime("%Y-%m-%d %H:%M")
     by_verdict = {}

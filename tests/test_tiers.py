@@ -1,4 +1,4 @@
-from kalshi_data.tiers import classify
+from kalshi_data.core.tiers import classify
 
 
 def test_parlays_excluded_regardless_of_category():

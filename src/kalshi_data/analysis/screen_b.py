@@ -20,14 +20,12 @@ horizons, so slopes are unaffected).
 
 from __future__ import annotations
 
-from pathlib import Path
 
 import polars as pl
 
 from .screens import cell_stats, prepare
 
-DATA_DIR = Path(__file__).resolve().parents[2] / "data"
-REPORTS_DIR = Path(__file__).resolve().parents[2] / "reports"
+from ..core.paths import DERIVED, TRADES, RESEARCH as REPORTS_DIR
 CARRY_APY = 0.0325
 INTEREST_LAUNCH = "2025-08-01"
 
@@ -74,9 +72,9 @@ def _md(df: pl.DataFrame) -> list[str]:
 
 
 def run() -> None:
-    snapshots = pl.read_parquet(DATA_DIR / "derived" / "snapshots.parquet")
+    snapshots = pl.read_parquet(DERIVED / "snapshots.parquet")
     trade_counts = (
-        pl.scan_parquet(DATA_DIR / "trades" / "*.parquet")
+        pl.scan_parquet(TRADES / "*.parquet")
         .group_by("ticker")
         .agg(pl.len().alias("n_trades"))
         .collect()

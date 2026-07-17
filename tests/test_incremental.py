@@ -1,4 +1,4 @@
-from kalshi_data.ingest_incremental import select_new_rows
+from kalshi_data.ingest.incremental import select_new_rows
 
 SERIES = {
     "KXCPI": {"ticker": "KXCPI", "category": "Economics", "tier": "deployment",

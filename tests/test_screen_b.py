@@ -1,6 +1,6 @@
 import polars as pl
 
-from kalshi_data.screen_b import residualize
+from kalshi_data.analysis.screen_b import residualize
 
 
 def _df(rows):

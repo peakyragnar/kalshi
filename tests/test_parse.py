@@ -1,4 +1,4 @@
-from kalshi_data.parse import cents, market_row, quantity
+from kalshi_data.core.parse import cents, market_row, quantity
 
 
 def test_cents_prefers_integer_form():

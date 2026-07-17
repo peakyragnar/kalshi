@@ -1,6 +1,6 @@
 import polars as pl
 
-from kalshi_data.phase3_map import build_map
+from kalshi_data.analysis.phase3_map import build_map
 
 
 def _snaps(cat, bucket, horizon, period, n, ret, ev_prefix):

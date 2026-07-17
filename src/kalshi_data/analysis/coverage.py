@@ -2,12 +2,10 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 
 import polars as pl
 
-DATA_DIR = Path(__file__).resolve().parents[2] / "data"
-REPORTS_DIR = Path(__file__).resolve().parents[2] / "reports"
+from ..core.paths import MARKETS, RESEARCH as REPORTS_DIR
 
 
 def _md_table(df: pl.DataFrame) -> list[str]:
@@ -20,7 +18,7 @@ def _md_table(df: pl.DataFrame) -> list[str]:
 
 
 def run() -> str:
-    df = pl.read_parquet(DATA_DIR / "markets" / "*.parquet")
+    df = pl.read_parquet(MARKETS / "*.parquet")
     df = df.with_columns(
         pl.col("close_time").str.to_datetime(time_zone="UTC", strict=False).dt.year().alias("year")
     )

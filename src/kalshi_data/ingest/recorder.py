@@ -13,14 +13,13 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
-from pathlib import Path
 
 import polars as pl
 
-from .client import KalshiClient
+from ..core.client import KalshiClient
 
-DATA_DIR = Path(__file__).resolve().parents[2] / "data"
-BOOKS_DIR = DATA_DIR / "books"
+from ..core.paths import BOOKS as BOOKS_DIR, SERIES
+
 CACHE = BOOKS_DIR / "open_markets_cache.json"
 LEVELS = 5
 
@@ -35,7 +34,7 @@ def open_deployment_markets(client: KalshiClient) -> list[str]:
         cache = json.loads(CACHE.read_text())
         if cache.get("date") == today:
             return cache["tickers"]
-    series = pl.read_parquet(DATA_DIR / "series.parquet").filter(pl.col("tier") == "deployment")
+    series = pl.read_parquet(SERIES).filter(pl.col("tier") == "deployment")
     tickers: list[str] = []
     for s in series.iter_rows(named=True):
         for page in client.paginate("/markets", "markets", status="open", series_ticker=s["ticker"]):

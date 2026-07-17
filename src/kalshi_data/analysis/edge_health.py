@@ -16,7 +16,6 @@ from __future__ import annotations
 
 import datetime as dt
 import json
-from pathlib import Path
 
 import polars as pl
 
@@ -24,9 +23,7 @@ from .screen_b import no_returns
 from .screen_d import load as load_fills
 from .screens import cell_stats, prepare
 
-DATA_DIR = Path(__file__).resolve().parents[2] / "data"
-REPORTS_DIR = Path(__file__).resolve().parents[2] / "reports"
-HISTORY = DATA_DIR / "edge_health_history.jsonl"
+from ..core.paths import DERIVED, EDGE_HISTORY as HISTORY, REPORTS as REPORTS_DIR, TRADES
 
 HURDLE = 0.07
 CARRY = 0.0325
@@ -64,9 +61,9 @@ def cell_frame(df: pl.DataFrame, spec: dict) -> pl.DataFrame:
 
 def run() -> dict:
     now = dt.datetime.now(dt.timezone.utc)
-    snapshots = pl.read_parquet(DATA_DIR / "derived" / "snapshots.parquet")
+    snapshots = pl.read_parquet(DERIVED / "snapshots.parquet")
     trade_counts = (
-        pl.scan_parquet(DATA_DIR / "trades" / "*.parquet")
+        pl.scan_parquet(TRADES / "*.parquet")
         .group_by("ticker").agg(pl.len().alias("n_trades")).collect()
     )
     df = no_returns(prepare(snapshots, trade_counts)).with_columns(

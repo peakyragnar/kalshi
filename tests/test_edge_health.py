@@ -1,4 +1,4 @@
-from kalshi_data.edge_health import CARRY, HURDLE, MIN_N, light
+from kalshi_data.analysis.edge_health import CARRY, HURDLE, MIN_N, light
 
 
 def test_green_when_bound_clears_hurdle():

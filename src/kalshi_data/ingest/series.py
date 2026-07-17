@@ -6,14 +6,13 @@ Output: data/series.parquet - one row per series, the join target for everything
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 import polars as pl
 
-from .client import KalshiClient
-from .tiers import classify
+from ..core.client import KalshiClient
+from ..core.tiers import classify
 
-DATA_DIR = Path(__file__).resolve().parents[2] / "data"
+from ..core.paths import RAW as DATA_DIR, SERIES
 
 
 def run(client: KalshiClient | None = None) -> pl.DataFrame:
@@ -36,8 +35,8 @@ def run(client: KalshiClient | None = None) -> pl.DataFrame:
             )
     df = pl.DataFrame(rows).unique(subset="ticker", keep="first")
     DATA_DIR.mkdir(parents=True, exist_ok=True)
-    df.write_parquet(DATA_DIR / "series.parquet")
-    print(f"series: {len(df):,} rows -> {DATA_DIR / 'series.parquet'}")
+    df.write_parquet(SERIES)
+    print(f"series: {len(df):,} rows -> {SERIES}")
     print(df.group_by("tier").len().sort("tier"))
     return df
 

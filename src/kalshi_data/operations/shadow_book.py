@@ -13,13 +13,11 @@ from __future__ import annotations
 
 import datetime as dt
 import json
-from pathlib import Path
 
-from .client import KalshiClient
-from .parse import cents
+from ..core.client import KalshiClient
+from ..core.parse import cents
 
-DATA_DIR = Path(__file__).resolve().parents[2] / "data"
-BOOK_FILE = DATA_DIR / "shadow_book.json"
+from ..core.paths import CANDIDATES, SHADOW_BOOK as BOOK_FILE
 
 BOOK_USD = 10_000.0
 UNIT_USD = 250.0
@@ -42,7 +40,7 @@ def load_book() -> dict:
 
 
 def place_from_candidates(book: dict) -> int:
-    cands = json.loads((DATA_DIR / "candidates_today.json").read_text())
+    cands = json.loads(CANDIDATES.read_text())
     have_events = {_event(o["ticker"]) for o in book["orders"]}
     placed = 0
     for c in cands:

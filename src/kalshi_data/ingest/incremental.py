@@ -16,18 +16,19 @@ from __future__ import annotations
 
 import datetime as dt
 import json
-from pathlib import Path
 
 import polars as pl
 
-from . import derive, ingest_series
-from .client import KalshiClient
-from .ingest_trades import MIN_LIFETIME_DAYS, MIN_VOLUME, fetch_market_trades
-from .parse import market_row
-from .tiers import classify
+from ..analysis import derive
+from . import series as ingest_series
+from ..core.client import KalshiClient
+from .trades import MIN_LIFETIME_DAYS, MIN_VOLUME, fetch_market_trades
+from ..core.parse import market_row
+from ..core.tiers import classify
 
-DATA_DIR = Path(__file__).resolve().parents[2] / "data"
-CHECKPOINT = DATA_DIR / "checkpoints" / "incremental.json"
+from ..core.paths import CHECKPOINTS, MARKETS, TRADES
+
+CHECKPOINT = CHECKPOINTS / "incremental.json"
 OVERLAP_HOURS = 48
 BACKFILL_END = "2026-07-15T00:00:00+00:00"
 
@@ -60,7 +61,7 @@ def run(rps: float = 8.0) -> None:
     now = dt.datetime.now(dt.timezone.utc)
 
     existing = set(
-        pl.scan_parquet(DATA_DIR / "markets" / "*.parquet")
+        pl.scan_parquet(MARKETS / "*.parquet")
         .filter(
             pl.col("close_time").str.to_datetime(time_zone="UTC", strict=False)
             >= start - dt.timedelta(hours=24)
@@ -84,7 +85,7 @@ def run(rps: float = 8.0) -> None:
 
     if rows:
         df = pl.DataFrame(rows, infer_schema_length=None).unique(subset="ticker")
-        path = DATA_DIR / "markets" / f"incr-{now:%Y%m%d}.parquet"
+        path = MARKETS / f"incr-{now:%Y%m%d}.parquet"
         df.write_parquet(path)
         print(f"markets: +{len(df):,} -> {path.name}", flush=True)
 
@@ -103,7 +104,7 @@ def run(rps: float = 8.0) -> None:
             trades.extend(fetch_market_trades(client, m["ticker"], m["open_time"], m["end_time"]))
         if trades:
             tdf = pl.DataFrame(trades, infer_schema_length=None).unique(subset="trade_id")
-            tpath = DATA_DIR / "trades" / f"incr-{now:%Y%m%d}.parquet"
+            tpath = TRADES / f"incr-{now:%Y%m%d}.parquet"
             tdf.write_parquet(tpath)
             print(f"trades: +{len(tdf):,} for {len(eligible):,} eligible markets -> {tpath.name}", flush=True)
     else:

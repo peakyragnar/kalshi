@@ -17,16 +17,15 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
-from pathlib import Path
 
 import polars as pl
 
-from .client import KalshiClient
-from .parse import cents, quantity
+from ..core.client import KalshiClient
+from ..core.parse import cents, quantity
 
-DATA_DIR = Path(__file__).resolve().parents[2] / "data"
-TRADES_DIR = DATA_DIR / "trades"
-CHECKPOINT = DATA_DIR / "checkpoints" / "trades_done.json"
+from ..core.paths import CHECKPOINTS, MARKETS, TRADES as TRADES_DIR
+
+CHECKPOINT = CHECKPOINTS / "trades_done.json"
 FLUSH_ROWS = 500_000
 
 CUTOFF = dt.datetime(2026, 5, 16, tzinfo=dt.timezone.utc)
@@ -65,7 +64,7 @@ def fetch_market_trades(
 
 
 def eligible_markets(tier: str) -> pl.DataFrame:
-    df = pl.read_parquet(DATA_DIR / "markets" / "*.parquet")
+    df = pl.read_parquet(MARKETS / "*.parquet")
     df = df.with_columns(
         pl.col("open_time").str.to_datetime(time_zone="UTC", strict=False),
         pl.col("close_time").str.to_datetime(time_zone="UTC", strict=False),

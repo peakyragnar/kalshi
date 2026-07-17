@@ -17,15 +17,13 @@ carried as a rulebook-risk item in the Phase 4 memos instead.
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 import polars as pl
 
 from .screen_b import no_returns
 from .screens import cell_stats, prepare
 
-DATA_DIR = Path(__file__).resolve().parents[2] / "data"
-REPORTS_DIR = Path(__file__).resolve().parents[2] / "reports"
+from ..core.paths import BOOKS, DERIVED, RESEARCH as REPORTS_DIR, SERIES, TRADES
 
 HURDLE = 0.07
 MIN_DISC_N = 50
@@ -115,10 +113,10 @@ def build_map(df: pl.DataFrame) -> pl.DataFrame:
 def capacity_from_books() -> pl.DataFrame:
     """Latest book per open market -> restable NO-side dollars by category x coarse bucket."""
     series_cat = dict(
-        pl.read_parquet(DATA_DIR / "series.parquet").select("ticker", "category").iter_rows()
+        pl.read_parquet(SERIES).select("ticker", "category").iter_rows()
     )
     latest: dict[str, dict] = {}
-    for path in sorted((DATA_DIR / "books").glob("books_*.jsonl")):
+    for path in sorted(BOOKS.glob("books_*.jsonl")):
         with path.open() as f:
             for line in f:
                 try:
@@ -171,9 +169,9 @@ def _md(df: pl.DataFrame) -> list[str]:
 
 
 def run() -> None:
-    snapshots = pl.read_parquet(DATA_DIR / "derived" / "snapshots.parquet")
+    snapshots = pl.read_parquet(DERIVED / "snapshots.parquet")
     trade_counts = (
-        pl.scan_parquet(DATA_DIR / "trades" / "*.parquet")
+        pl.scan_parquet(TRADES / "*.parquet")
         .group_by("ticker")
         .agg(pl.len().alias("n_trades"))
         .collect()

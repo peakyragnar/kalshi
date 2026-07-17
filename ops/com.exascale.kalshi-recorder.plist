@@ -12,7 +12,7 @@
         <string>/Users/michael/Kalshi</string>
         <string>python</string>
         <string>-m</string>
-        <string>kalshi_data.recorder</string>
+        <string>kalshi_data.ingest.recorder</string>
     </array>
     <key>StartCalendarInterval</key>
     <array>
