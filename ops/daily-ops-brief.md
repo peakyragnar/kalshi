@@ -26,9 +26,12 @@ kalshi_data.operations.dashboard
 
 3. SIGNAL REVIEW: git diff reports/tail_signals.md and reports/edge_health.md
 against the previous commit. OPERATOR ALERTS are exactly: a tail signal
-transitioning to HOT on a market held in data/state/shadow_book.json; a new
-RED rulebook verdict; an edge-health light transition (GREEN/AMBER/RED); a
-pipeline failure you could not fix.
+transitioning to HOT on a market held in the shadow book OR the real portfolio
+(data/state/shadow_book.json, data/state/portfolio.json); a new RED rulebook
+verdict; an edge-health light transition (GREEN/AMBER/RED); any withdrawal or
+downgrade of a deployed cell's qualification by the research system (atlas,
+audits) — this class MUST alert, it affects live orders; a pipeline failure
+you could not fix.
 
 4. STATUS FILE: write data/state/ops_status.json as
 {"ts": "<ISO utc now>", "status": "quiet" | "alerts", "alerts": ["..."]}.

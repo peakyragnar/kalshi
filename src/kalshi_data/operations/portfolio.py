@@ -38,22 +38,24 @@ def run() -> None:
     orders = c.get("/portfolio/orders", status="resting").get("orders", []) or []
     settlements = c.get("/portfolio/settlements", limit=200).get("settlements", []) or []
 
+    from ..core.parse import cents, quantity
+
     cash = _cents(balance.get("balance"))
     pos_rows = []
     exposure = 0.0
     for p in positions:
-        qty = p.get("position", 0)
+        qty = quantity(p, "position") or 0
         if not qty:
             continue
-        value = _cents(p.get("market_exposure"))
+        value = (cents(p, "market_exposure") or 0) / 100
         exposure += abs(value)
         pos_rows.append({
             "ticker": p.get("ticker"),
-            "position": qty,
+            "position": int(qty),
             "side": "YES" if qty > 0 else "NO",
             "exposure_usd": round(abs(value), 2),
-            "realized_usd": round(_cents(p.get("realized_pnl")), 2),
-            "fees_usd": round(_cents(p.get("fees_paid")), 2),
+            "realized_usd": round((cents(p, "realized_pnl") or 0) / 100, 2),
+            "fees_usd": round((cents(p, "fees_paid") or 0) / 100, 2),
         })
     from ..core.parse import cents, quantity
 
