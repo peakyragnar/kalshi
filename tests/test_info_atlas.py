@@ -45,6 +45,14 @@ def test_tail_gap_score_floors_caps_and_thin_evidence():
     assert tail_gap_score(None, 500) == UNKNOWN_FLOOR
 
 
+def test_judgment_catalog_additions():
+    up, pit, _ = host_scores(_sources("https://gasprices.aaa.com/x"))
+    assert (up, pit) == (0.8, 0.5)
+    up, pit, note = host_scores(_sources("https://www.kalshi.com/self"))
+    assert (up, pit) == (0.2, 0.2)
+    assert "self-referential" in note
+
+
 def test_geometric_mean_zero_gates():
     assert geometric_mean([1.0, 1.0, 0.0]) == 0.0
     assert abs(geometric_mean([0.5, 0.5, 0.5]) - 0.5) < 1e-12

@@ -81,6 +81,37 @@ HOST_CATALOG: dict[str, tuple[float, float, str]] = {
     "tradingview.com": (0.5, 0.5, "price feeds: capture-only at settlement source"),
     "faa.gov": (0.7, 0.5, "advisories/logs: public, capture-only"),
     "bts.gov": (0.8, 1.0, "transportation statistics archived"),
+    # judgment pass 2026-07-18 (plan 03 Track A): entries below added after
+    # reviewing the top-30 unknown-floor families by flow
+    "gasprices.aaa.com": (0.8, 0.5, "AAA daily national gas price; EIA weekly archived cousin"),
+    "federalregister.gov": (0.8, 1.0, "Federal Register: EO publication archived"),
+    "opm.gov": (0.7, 0.5, "OPM operating status: public, capture-only"),
+    "theice.com": (0.6, 1.0, "ICE settlement prices archived; pro-priced underlying"),
+    "rottentomatoes.com": (0.7, 0.5, "scores public; review counts accumulate predictably; capture-only"),
+    "lmarena.ai": (0.8, 0.5, "LM Arena leaderboard: public, slow-moving, capture-only"),
+    "arena.ai": (0.8, 0.5, "LM Arena leaderboard: public, slow-moving, capture-only"),
+    "netflix.com": (0.7, 0.5, "Netflix weekly Top-10: published weekly, capture-only"),
+    "spotify.com": (0.7, 0.5, "Spotify charts: published, partial public history"),
+    "billboard.com": (0.6, 0.5, "Billboard charts: published weekly"),
+    "spacex.com": (0.7, 0.5, "launch counts: schedules + FAA licenses public, capture-only"),
+    "nyc.gov": (0.6, 0.5, "city election results: official, capture-only"),
+    "usa.gov": (0.5, 0.5, "official results pages: capture-only"),
+    "kalshi.com": (0.2, 0.2, "self-referential settlement: no external trail"),
+}
+
+# per-series judgment overrides (2026-07-18): applied AFTER host_scores. Two
+# reasons a series lands here: Kalshi's settlement_sources metadata is wrong
+# (KXMUSKNW cites BLS for a net-worth market), or the real upstream is not
+# derivable from hostnames (index ranges: CBOE options smiles are a literal
+# probability density for the settlement variable).
+SERIES_OVERRIDES: dict[str, tuple[float, float, str]] = {
+    "KXMUSKNW": (0.4, 0.5, "metadata wrong (cites BLS); actual: Bloomberg Billionaires, capture-only"),
+    "INXY": (0.8, 0.5, "options-implied density (CBOE SPX smile) prices the settlement variable"),
+    "NASDAQ100Y": (0.8, 0.5, "options-implied density (CBOE NDX smile) prices the settlement variable"),
+    "KXINX": (0.8, 0.5, "options-implied density (CBOE SPX smile) prices the settlement variable"),
+    "KXINXY": (0.8, 0.5, "options-implied density (CBOE SPX smile) prices the settlement variable"),
+    "KXNASDAQ100": (0.8, 0.5, "options-implied density (CBOE NDX smile) prices the settlement variable"),
+    "KXNASDAQ100Y": (0.8, 0.5, "options-implied density (CBOE NDX smile) prices the settlement variable"),
 }
 
 
@@ -133,7 +164,11 @@ def build_atlas() -> pl.DataFrame:
     rows = []
     for r in series.iter_rows(named=True):
         source_class = classify_settlement_source(r["settlement_sources"])
-        upstream, pit, note = host_scores(r["settlement_sources"])
+        if r["ticker"] in SERIES_OVERRIDES:
+            upstream, pit, note = SERIES_OVERRIDES[r["ticker"]]
+            note = "override — " + note
+        else:
+            upstream, pit, note = host_scores(r["settlement_sources"])
         rows.append({
             "series_ticker": r["ticker"], "category": r["category"], "title": r["title"],
             "source_class": source_class,

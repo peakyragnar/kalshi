@@ -44,8 +44,8 @@
 | KXRAINNYCM | Climate and Weather | 0.642 | 1.000 | 1.000 | 1.000 | 0.726 | 0.306 | 0.316 | 1021435.400 | 147 | 4.167 | NWS/NOAA: model-run archives (GFS et al.) + stat |
 | KXU3 | Economics | 0.642 | 1.000 | 0.700 | 1.000 | 0.724 | 0.318 | 0.435 | 974703.470 | 181 | 8.583 | BLS releases + ALFRED vintages |
 | KXHIGHTATL | Climate and Weather | 0.641 | 1.000 | 1.000 | 1.000 | 0.710 | 0.115 | 0.849 | 759650.460 | 341 | 81.000 | NWS/NOAA: model-run archives (GFS et al.) + stat |
+| KXEOWEEK | Politics | 0.641 | 1.000 | 0.800 | 1.000 | 0.817 | 0.300 | 0.353 | 5820682.690 | 58 | 5.250 | Federal Register: EO publication archived |
 | KXRAINDALM | Climate and Weather | 0.640 | 1.000 | 1.000 | 1.000 | 0.683 | 0.300 | 0.334 | 451388.700 | 50 | 4.667 | NWS/NOAA: model-run archives (GFS et al.) + stat |
-| KXRAINSEAM | Climate and Weather | 0.640 | 1.000 | 1.000 | 1.000 | 0.677 | 0.300 | 0.337 | 404131.760 | 54 | 4.750 | NWS/NOAA: model-run archives (GFS et al.) + stat |
 
 ## Best rank per category
 
@@ -53,18 +53,18 @@
 |---|---|---|
 | Climate and Weather | 0.798 | 289 |
 | Economics | 0.652 | 605 |
+| Politics | 0.641 | 2054 |
 | Mentions | 0.592 | 377 |
-| Elections | 0.564 | 1489 |
-| Politics | 0.558 | 2054 |
-| Financials | 0.510 | 649 |
+| Elections | 0.566 | 1489 |
+| Financials | 0.549 | 649 |
 | Science and Technology | 0.507 | 281 |
+| Entertainment | 0.478 | 2469 |
 | Companies | 0.475 | 173 |
 | Health | 0.425 | 96 |
-| Entertainment | 0.421 | 2469 |
 | World | 0.414 | 143 |
 | Commodities | 0.403 | 71 |
 | Education | 0.336 | 1 |
 | Transportation | 0.290 | 39 |
-| Social | 0.260 | 52 |
+| Social | 0.234 | 52 |
 
 Machine-readable: `data/derived/info_atlas.parquet`. Refresh quarterly or on universe change (03-information-edge-plan.md, Track A).
