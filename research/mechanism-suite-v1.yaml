@@ -1,0 +1,135 @@
+{
+  "version": 1,
+  "sealed_at": "2026-07-18T05:34:27Z",
+  "retrospective": true,
+  "objective": "search distinct market mechanisms rather than variations of the term-premium thesis",
+  "common_contract": {
+    "universe": "deployment markets; sports, parlays, and crypto excluded",
+    "entry": "observable historical trade price at a registered decision point; calibration proxy unless actual fill-conditioned tape is specified",
+    "exit": "hold to settlement unless a paired path horizon is specified",
+    "carry_apy": 0.0325,
+    "economic_hurdle": 0.07,
+    "error_multiplier": 2.0,
+    "minimum_events_per_fold": 50,
+    "cluster_by": "event_ticker",
+    "folds": ["early", "middle", "recent"],
+    "sealed_forward_start": "2026-07-17T00:00:00Z",
+    "search_control": "Benjamini-Hochberg within family and across the complete suite",
+    "deployment": "historical qualification permits shadow testing only; live books, capacity, forward evidence, and operator approval remain mandatory"
+  },
+  "price_buckets": [[1, 5], [6, 10], [11, 20], [21, 40], [41, 60], [61, 80], [81, 95], [96, 99]],
+  "sides": ["yes", "no"],
+  "families": [
+    {
+      "id": "two-sided-close-calibration",
+      "mechanism": "both YES and NO miscalibration can vary by category, price, and time to close",
+      "status": "registered",
+      "data_claim": "calibration",
+      "dimensions": {
+        "categories": ["Climate and Weather", "Commodities", "Companies", "Economics", "Elections", "Financials", "Health", "Politics", "Science and Technology", "World"],
+        "decision_labels": ["T-1h", "T-6h", "T-1d", "T-3d", "T-7d", "T-30d", "T-90d", "T-180d", "T-365d"]
+      }
+    },
+    {
+      "id": "listing-lifecycle",
+      "mechanism": "new markets may be anchored inefficiently before information and liquidity accumulate",
+      "status": "registered",
+      "data_claim": "calibration",
+      "dimensions": {"decision_labels": ["L+1d", "L+7d", "L+30d"], "maximum_staleness_as_listing_age": 0.5}
+    },
+    {
+      "id": "price-path-dependence",
+      "mechanism": "large pre-resolution price moves may continue or revert",
+      "status": "registered",
+      "data_claim": "calibration",
+      "dimensions": {
+        "label_pairs": [["T-30d", "T-7d"], ["T-7d", "T-3d"], ["T-3d", "T-1d"], ["T-1d", "T-6h"]],
+        "move_bins_cents": [[-100, -10], [-9, -3], [-2, 2], [3, 9], [10, 100]]
+      }
+    },
+    {
+      "id": "aggressor-imbalance",
+      "mechanism": "recent aggressive YES or NO flow may overreact or reveal information",
+      "status": "registered",
+      "data_claim": "calibration",
+      "dimensions": {"decision_labels": ["T-1d", "T-3d", "T-7d", "T-30d"], "minimum_24h_volume": 25, "yes_taker_share_bins": [[0.0, 0.2], [0.2, 0.4], [0.4, 0.6], [0.6, 0.8], [0.8, 1.000001]]}
+    },
+    {
+      "id": "recent-activity",
+      "mechanism": "attention and liquidity regimes condition mispricing",
+      "status": "registered",
+      "data_claim": "calibration",
+      "dimensions": {"decision_labels": ["T-1d", "T-3d", "T-7d", "T-30d"], "volume_24h_bins": [[0, 10], [10, 100], [100, 1000], [1000, 1000000000000]]}
+    },
+    {
+      "id": "price-staleness",
+      "mechanism": "stale last trades may embed a distinct and potentially untradeable pricing residual",
+      "status": "registered",
+      "data_claim": "calibration",
+      "dimensions": {"decision_labels": ["T-1d", "T-3d", "T-7d", "T-30d"], "staleness_fraction_bins": [[0.0, 0.01], [0.01, 0.05], [0.05, 0.2], [0.2, 1.000001]]}
+    },
+    {
+      "id": "recurring-series-residual",
+      "mechanism": "persistent participant composition creates series-level residual alpha after price and horizon controls",
+      "status": "registered",
+      "data_claim": "calibration",
+      "dimensions": {"decision_labels": ["T-7d", "T-30d", "T-90d"], "series": "all observed deployment series; support filter precedes result ranking"}
+    },
+    {
+      "id": "calendar-month",
+      "mechanism": "seasonal information and participation regimes create month-specific residuals",
+      "status": "registered",
+      "data_claim": "calibration",
+      "dimensions": {"decision_labels": ["T-7d", "T-30d", "T-90d"], "months": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]}
+    },
+    {
+      "id": "calendar-weekday",
+      "mechanism": "weekend and weekday information cycles create predictable pricing residuals",
+      "status": "registered",
+      "data_claim": "calibration",
+      "dimensions": {"decision_labels": ["T-1d", "T-3d", "T-7d", "T-30d"], "weekdays": [1, 2, 3, 4, 5, 6, 7]}
+    },
+    {
+      "id": "early-close-risk",
+      "mechanism": "contracts permitted to close early may carry distinct miscalibration or timing risk",
+      "status": "registered",
+      "data_claim": "calibration with scheduled-hold carry only",
+      "dimensions": {"decision_labels": ["T-7d", "T-30d", "T-90d"], "can_close_early": [false, true]}
+    },
+    {
+      "id": "event-structure",
+      "mechanism": "crowded multi-contract events may be priced differently from standalone events",
+      "status": "registered",
+      "data_claim": "calibration",
+      "dimensions": {"decision_labels": ["T-7d", "T-30d", "T-90d"], "event_group_size_bins": [[1, 2], [2, 4], [4, 11], [11, 1000000]]}
+    },
+    {
+      "id": "settlement-source",
+      "mechanism": "official, exchange/data, media, and missing settlement sources carry different information and rule risk",
+      "status": "registered",
+      "data_claim": "calibration",
+      "dimensions": {"decision_labels": ["T-7d", "T-30d", "T-90d"], "source_classes": ["government", "exchange_or_data", "media_or_other", "missing"]}
+    },
+    {
+      "id": "conditional-maker-selection",
+      "mechanism": "actual resting-side fills may be profitable only in specific category, horizon, and price cells",
+      "status": "registered",
+      "data_claim": "historical fill-conditioned execution",
+      "dimensions": {"horizon_bins": ["0-7d", "7-30d", "30-90d", "90-180d", "180d+"], "direction": "actual maker side inferred from taker_side"}
+    },
+    {
+      "id": "ladder-monotonicity",
+      "mechanism": "ordered threshold contracts can violate probability monotonicity",
+      "status": "registered_metadata_required",
+      "data_claim": "paired calibration; execution requires both live legs",
+      "dimensions": {"decision_labels": ["T-1d", "T-7d", "T-30d"], "minimum_violation_cents": 2, "directions": ["above", "below"]}
+    },
+    {
+      "id": "rule-objectivity",
+      "mechanism": "judgment-heavy settlement language creates a distinct pricing and tail-risk premium",
+      "status": "registered_metadata_required",
+      "data_claim": "calibration",
+      "dimensions": {"decision_labels": ["T-7d", "T-30d", "T-90d"], "classes": ["numeric_objective", "official_act", "judgment_or_attribution", "unclassified"]}
+    }
+  ]
+}
