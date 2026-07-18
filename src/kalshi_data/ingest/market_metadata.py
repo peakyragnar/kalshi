@@ -12,6 +12,7 @@ import threading
 import polars as pl
 
 from ..core.client import KalshiClient, SharedRateGate
+from ..core.parquet import read_shards
 from ..core.paths import CHECKPOINTS, MARKET_METADATA, MARKETS, SERIES
 
 
@@ -93,6 +94,17 @@ def normalize_metadata_frame(rows: list[dict]) -> pl.DataFrame:
     ).unique(subset="ticker", keep="first")
 
 
+def metadata_gaps(
+    raw: pl.DataFrame, stored: pl.DataFrame, deployment_series: pl.DataFrame
+) -> pl.DataFrame:
+    """Return missing raw tickers only when their current series is in scope."""
+    return raw.join(stored, on="ticker", how="anti").join(
+        deployment_series.rename({"ticker": "series_ticker"}),
+        on="series_ticker",
+        how="inner",
+    )
+
+
 def _flush(rows: list[dict], state: dict) -> None:
     if not rows:
         return
@@ -166,11 +178,9 @@ def run(tier: str = "deployment", rps: float = 4.0, workers: int = 8) -> None:
                 print(f"  {index:,}/{len(small):,} small series; {len(pending):,} rows pending", flush=True)
     _flush(pending, state)
     _save_state(state)
-    raw = pl.read_parquet(MARKETS / "*.parquet", columns=["ticker", "series_ticker"]).unique("ticker")
+    raw = read_shards(MARKETS, columns=["ticker", "series_ticker"]).unique("ticker")
     stored = pl.read_parquet(MARKET_METADATA / "*.parquet", columns=["ticker"]).unique("ticker")
-    missing = raw.join(stored, on="ticker", how="anti").join(
-        series.rename({"ticker": "series_ticker"}), on="series_ticker", how="left"
-    )
+    missing = metadata_gaps(raw, stored, series)
     if len(missing):
         print(f"metadata: repairing {len(missing):,} ticker-level gaps", flush=True)
         repair_client = KalshiClient(rps=rps, rate_gate=_shared_rate_gate)

@@ -28,7 +28,9 @@ def run(client: KalshiClient | None = None) -> pl.DataFrame:
                     "frequency": s.get("frequency"),
                     "fee_type": s.get("fee_type"),
                     "fee_multiplier": s.get("fee_multiplier"),
-                    "tier": classify(s.get("ticker"), s.get("category")),
+                    "tier": classify(
+                        s.get("ticker"), s.get("category"), s.get("title"), s.get("tags")
+                    ),
                     "settlement_sources": json.dumps(s.get("settlement_sources")),
                     "tags": json.dumps(s.get("tags")),
                 }

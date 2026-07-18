@@ -8,10 +8,24 @@ from kalshi_data.analysis.research_panel import (
     build_market_relations,
     build_outcomes,
     enrich_outcomes_with_metadata,
+    exclude_red_rulebooks,
 )
 
 
 UTC = dt.timezone.utc
+
+
+def test_research_universe_excludes_red_rulebooks_but_keeps_unswept_and_yellow():
+    markets = pl.DataFrame({
+        "series_ticker": ["GOOD", "YELLOW", "BAD"],
+        "ticker": ["GOOD-1", "YELLOW-1", "BAD-1"],
+    })
+    verdicts = {
+        "YELLOW": {"verdict": "YELLOW"},
+        "BAD": {"verdict": "RED"},
+    }
+    out = exclude_red_rulebooks(markets, verdicts)
+    assert out["ticker"].to_list() == ["GOOD-1", "YELLOW-1"]
 
 
 def _market(**overrides):

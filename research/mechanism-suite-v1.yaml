@@ -26,11 +26,29 @@
       "reason": "scope reconciliation against the previously approved build plan found that related-contract lead-lag was promised but absent from the executable registry",
       "change": "added a sibling lead-lag family using the mean move of other contracts in the same event, explicitly excluding the target contract's own move",
       "result_status": "registered before this family was executed; complete-suite FDR will be recomputed"
+    },
+    {
+      "at": "2026-07-18T08:01:02Z",
+      "reason": "operator removed inherited category and professional-market exclusions after the first complete-suite review",
+      "change": "expanded structural research to Education, Entertainment, Mentions, Social, and Transportation; retained only Sports, Crypto, KXMVE parlays, and versioned RED rulebooks as exclusions; removed the macro and election presumptions",
+      "result_status": "prior suite-wide q-values and survivor interpretation must be recomputed over the expanded corpus"
+    },
+    {
+      "at": "2026-07-18T10:35:00Z",
+      "reason": "exact category matching admitted sports contracts mislabeled by Kalshi under Mentions, Entertainment, Politics, and other categories",
+      "change": "sports is now a semantic series-level exclusion with word-boundary and reviewed exact-series rules; current catalog tier overrides stale raw-market tier",
+      "result_status": "suite recomputed over the corrected non-sports deployment universe"
+    },
+    {
+      "at": "2026-07-18T10:59:47Z",
+      "reason": "exact Crypto-category matching admitted Bitcoin, stablecoin, and exchange contracts mislabeled under Companies, Politics, Financials, and other categories",
+      "change": "crypto is now a semantic series-level exclusion using reviewed word-boundary and tag rules; DOGE government-efficiency and Cryptosporidium contracts are explicit regression cases against substring leakage",
+      "result_status": "suite must be recomputed over the corrected non-sports, non-crypto deployment universe"
     }
   ],
   "objective": "search distinct market mechanisms rather than variations of the term-premium thesis",
   "common_contract": {
-    "universe": "deployment markets; sports, parlays, and crypto excluded",
+    "universe": "all categories except semantically classified sports and crypto series; KXMVE parlays and versioned RED rulebooks excluded",
     "entry": "observable historical trade price at a registered decision point; calibration proxy unless actual fill-conditioned tape is specified",
     "exit": "hold to settlement unless a paired path horizon is specified",
     "carry_apy": 0.0325,
@@ -52,7 +70,7 @@
       "status": "registered",
       "data_claim": "calibration",
       "dimensions": {
-        "categories": ["Climate and Weather", "Commodities", "Companies", "Economics", "Elections", "Financials", "Health", "Politics", "Science and Technology", "World"],
+        "categories": ["Climate and Weather", "Commodities", "Companies", "Economics", "Education", "Elections", "Entertainment", "Financials", "Health", "Mentions", "Politics", "Science and Technology", "Social", "Transportation", "World"],
         "decision_labels": ["T-1h", "T-6h", "T-1d", "T-3d", "T-7d", "T-30d", "T-90d", "T-180d", "T-365d"]
       }
     },

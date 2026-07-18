@@ -1,6 +1,6 @@
 # Corpus audit
 
-Generated: 2026-07-18T07:24:21.062868+00:00
+Generated: 2026-07-18T11:00:40.463106+00:00
 
 ## Integrity verdict
 
@@ -10,16 +10,16 @@ Historical order books remain unavailable; calibration and fill-conditioned exec
 
 ## Census
 
-- `markets`: 2,733,070
-- `events`: 51,587
-- `series`: 3,579
-- `trade_rows`: 47,342,026
-- `markets_with_tape`: 380,660
+- `markets`: 2,888,361
+- `events`: 64,573
+- `series`: 5,621
+- `trade_rows`: 67,289,825
+- `markets_with_tape`: 465,472
 - `markets_missing_settled_time`: 68
 - `result_markets_with_future_scheduled_end`: 1
 - `early_close_markets_without_resolution_time`: 68
-- `traded_sub_6d_markets`: 332,515
-- `traded_sub_6d_markets_with_tape`: 332,515
+- `traded_sub_6d_markets`: 397,875
+- `traded_sub_6d_markets_with_tape`: 380,525
 
 ## Coverage
 
@@ -180,6 +180,7 @@ Historical order books remain unavailable; calibration and fill-conditioned exec
 | Economics | 2026 | 90d+ | True | 801 | 114 | 68 | 194115317 |
 | Economics | 2026 | <1d | False | 3069 | 295 | 15 | 4 |
 | Economics | 2026 | <1d | True | 3797 | 363 | 22 | 15017740 |
+| Education | 2026 | 90d+ | True | 1 | 1 | 1 | 4182 |
 | Elections | 2024 | 1-6d | True | 5 | 2 | 2 | 6673 |
 | Elections | 2024 | 6-30d | True | 31 | 17 | 17 | 2349388 |
 | Elections | 2024 | <1d | False | 5 | 1 | 1 | 0 |
@@ -202,6 +203,52 @@ Historical order books remain unavailable; calibration and fill-conditioned exec
 | Elections | 2026 | 90d+ | False | 5 | 3 | 3 | 0 |
 | Elections | 2026 | 90d+ | True | 1100 | 224 | 196 | 285256195 |
 | Elections | 2026 | <1d | True | 28 | 11 | 9 | 694030 |
+| Entertainment | 2021 | 1-6d | True | 3 | 3 | 2 | 20358 |
+| Entertainment | 2021 | 30-90d | True | 3 | 3 | 3 | 35945 |
+| Entertainment | 2021 | 6-30d | False | 4 | 4 | 1 | 14213 |
+| Entertainment | 2021 | 6-30d | True | 13 | 11 | 5 | 77883 |
+| Entertainment | 2022 | 1-6d | True | 18 | 18 | 1 | 43692 |
+| Entertainment | 2022 | 30-90d | False | 1 | 1 | 1 | 45487 |
+| Entertainment | 2022 | 30-90d | True | 85 | 12 | 12 | 959093 |
+| Entertainment | 2022 | 6-30d | False | 4 | 3 | 3 | 0 |
+| Entertainment | 2022 | 6-30d | True | 37 | 5 | 5 | 176682 |
+| Entertainment | 2022 | 90d+ | True | 1 | 1 | 1 | 10947 |
+| Entertainment | 2023 | 1-6d | False | 20 | 10 | 2 | 0 |
+| Entertainment | 2023 | 1-6d | True | 47 | 16 | 3 | 37296 |
+| Entertainment | 2023 | 30-90d | True | 54 | 10 | 10 | 774282 |
+| Entertainment | 2023 | 6-30d | False | 32 | 13 | 2 | 0 |
+| Entertainment | 2023 | 6-30d | True | 100 | 23 | 8 | 160825 |
+| Entertainment | 2023 | 90d+ | True | 6 | 2 | 2 | 98870 |
+| Entertainment | 2024 | 1-6d | False | 16 | 10 | 7 | 0 |
+| Entertainment | 2024 | 1-6d | True | 514 | 122 | 51 | 8912510 |
+| Entertainment | 2024 | 30-90d | False | 44 | 13 | 13 | 0 |
+| Entertainment | 2024 | 30-90d | True | 422 | 89 | 88 | 9893112 |
+| Entertainment | 2024 | 6-30d | False | 135 | 42 | 23 | 45275 |
+| Entertainment | 2024 | 6-30d | True | 838 | 169 | 112 | 12062737 |
+| Entertainment | 2024 | 90d+ | False | 3 | 1 | 1 | 0 |
+| Entertainment | 2024 | 90d+ | True | 278 | 51 | 51 | 4619137 |
+| Entertainment | 2024 | <1d | False | 6 | 2 | 2 | 0 |
+| Entertainment | 2024 | <1d | True | 29 | 9 | 4 | 684847 |
+| Entertainment | 2025 | 1-6d | False | 21597 | 2713 | 126 | 565019 |
+| Entertainment | 2025 | 1-6d | True | 7433 | 2168 | 255 | 39583303 |
+| Entertainment | 2025 | 30-90d | False | 2194 | 202 | 184 | 4994358 |
+| Entertainment | 2025 | 30-90d | True | 3133 | 443 | 402 | 81272824 |
+| Entertainment | 2025 | 6-30d | False | 8955 | 1592 | 244 | 4524943 |
+| Entertainment | 2025 | 6-30d | True | 5482 | 1152 | 474 | 72480824 |
+| Entertainment | 2025 | 90d+ | False | 330 | 59 | 59 | 4198100 |
+| Entertainment | 2025 | 90d+ | True | 1020 | 200 | 193 | 64346645 |
+| Entertainment | 2025 | <1d | False | 3402 | 870 | 26 | 67389 |
+| Entertainment | 2025 | <1d | True | 504 | 235 | 31 | 6247723 |
+| Entertainment | 2026 | 1-6d | False | 8067 | 862 | 42 | 9332857 |
+| Entertainment | 2026 | 1-6d | True | 6759 | 1330 | 109 | 54049124 |
+| Entertainment | 2026 | 30-90d | False | 342 | 99 | 80 | 33184 |
+| Entertainment | 2026 | 30-90d | True | 3989 | 512 | 323 | 206213456 |
+| Entertainment | 2026 | 6-30d | False | 6208 | 1527 | 69 | 31636601 |
+| Entertainment | 2026 | 6-30d | True | 12828 | 1974 | 247 | 148075498 |
+| Entertainment | 2026 | 90d+ | False | 157 | 26 | 26 | 52029933 |
+| Entertainment | 2026 | 90d+ | True | 1229 | 168 | 166 | 174513936 |
+| Entertainment | 2026 | <1d | False | 189 | 38 | 9 | 200 |
+| Entertainment | 2026 | <1d | True | 1217 | 149 | 33 | 17115636 |
 | Financials | 2021 | 6-30d | True | 1 | 1 | 1 | 3391 |
 | Financials | 2022 | 1-6d | False | 35 | 17 | 6 | 0 |
 | Financials | 2022 | 1-6d | True | 978 | 145 | 9 | 9057868 |
@@ -271,6 +318,24 @@ Historical order books remain unavailable; calibration and fill-conditioned exec
 | Health | 2025 | 90d+ | False | 3 | 1 | 1 | 0 |
 | Health | 2025 | 90d+ | True | 25 | 9 | 8 | 454880 |
 | Health | 2026 | 90d+ | True | 31 | 13 | 13 | 1206768 |
+| Mentions | 2025 | 1-6d | False | 2178 | 136 | 25 | 38158126 |
+| Mentions | 2025 | 1-6d | True | 4296 | 276 | 110 | 54440478 |
+| Mentions | 2025 | 30-90d | False | 20 | 2 | 2 | 0 |
+| Mentions | 2025 | 30-90d | True | 894 | 57 | 36 | 21760394 |
+| Mentions | 2025 | 6-30d | False | 271 | 14 | 7 | 6630174 |
+| Mentions | 2025 | 6-30d | True | 2390 | 169 | 102 | 34198751 |
+| Mentions | 2025 | 90d+ | True | 7 | 3 | 3 | 109016 |
+| Mentions | 2025 | <1d | False | 350 | 44 | 20 | 2699519 |
+| Mentions | 2025 | <1d | True | 3234 | 231 | 71 | 42402939 |
+| Mentions | 2026 | 1-6d | False | 12572 | 644 | 14 | 219806136 |
+| Mentions | 2026 | 1-6d | True | 9307 | 658 | 171 | 228504309 |
+| Mentions | 2026 | 30-90d | False | 1 | 1 | 1 | 0 |
+| Mentions | 2026 | 30-90d | True | 372 | 21 | 10 | 37874462 |
+| Mentions | 2026 | 6-30d | False | 1046 | 55 | 6 | 20612428 |
+| Mentions | 2026 | 6-30d | True | 3474 | 235 | 106 | 114449830 |
+| Mentions | 2026 | 90d+ | True | 27 | 3 | 3 | 9815419 |
+| Mentions | 2026 | <1d | False | 2267 | 171 | 18 | 16106457 |
+| Mentions | 2026 | <1d | True | 14511 | 1007 | 114 | 274514593 |
 | Politics | 2021 | 1-6d | True | 3 | 3 | 3 | 31122 |
 | Politics | 2021 | 30-90d | True | 21 | 14 | 14 | 760912 |
 | Politics | 2021 | 6-30d | True | 27 | 17 | 6 | 1099843 |
@@ -347,6 +412,36 @@ Historical order books remain unavailable; calibration and fill-conditioned exec
 | Science and Technology | 2026 | 90d+ | True | 120 | 51 | 48 | 24538068 |
 | Science and Technology | 2026 | <1d | False | 40 | 1 | 1 | 0 |
 | Science and Technology | 2026 | <1d | True | 1 | 1 | 1 | 6935 |
+| Social | 2025 | 1-6d | False | 5 | 1 | 1 | 0 |
+| Social | 2025 | 1-6d | True | 16 | 6 | 6 | 315571 |
+| Social | 2025 | 30-90d | False | 3 | 2 | 2 | 0 |
+| Social | 2025 | 30-90d | True | 10 | 10 | 10 | 81892 |
+| Social | 2025 | 6-30d | False | 3 | 3 | 3 | 0 |
+| Social | 2025 | 6-30d | True | 11 | 9 | 7 | 779100 |
+| Social | 2025 | 90d+ | False | 4 | 3 | 3 | 0 |
+| Social | 2025 | 90d+ | True | 7 | 5 | 5 | 80040 |
+| Social | 2025 | <1d | True | 13 | 4 | 4 | 168405 |
+| Social | 2026 | 30-90d | True | 2 | 2 | 2 | 64311 |
+| Social | 2026 | 6-30d | True | 9 | 5 | 5 | 231901 |
+| Social | 2026 | 90d+ | True | 1 | 1 | 1 | 2092 |
+| Social | 2026 | <1d | False | 21 | 1 | 1 | 0 |
+| Social | 2026 | <1d | True | 1 | 1 | 1 | 1 |
+| Transportation | 2021 | 1-6d | False | 1 | 1 | 1 | 0 |
+| Transportation | 2021 | 1-6d | True | 84 | 82 | 3 | 256370 |
+| Transportation | 2021 | 6-30d | True | 31 | 31 | 2 | 174817 |
+| Transportation | 2021 | <1d | True | 3 | 3 | 2 | 7362 |
+| Transportation | 2022 | 1-6d | True | 21 | 21 | 1 | 59542 |
+| Transportation | 2022 | 30-90d | True | 6 | 1 | 1 | 12901 |
+| Transportation | 2022 | 6-30d | False | 23 | 6 | 6 | 0 |
+| Transportation | 2022 | 6-30d | True | 24 | 6 | 6 | 36166 |
+| Transportation | 2023 | 30-90d | True | 3 | 1 | 1 | 66011 |
+| Transportation | 2023 | 6-30d | True | 2 | 2 | 2 | 14934 |
+| Transportation | 2024 | 6-30d | True | 1 | 1 | 1 | 36240 |
+| Transportation | 2025 | 30-90d | False | 4 | 1 | 1 | 31314 |
+| Transportation | 2025 | 30-90d | True | 5 | 2 | 2 | 128300 |
+| Transportation | 2025 | 6-30d | True | 6 | 4 | 3 | 167063 |
+| Transportation | 2026 | 30-90d | False | 4 | 1 | 1 | 18143 |
+| Transportation | 2026 | 90d+ | True | 1 | 1 | 1 | 6046 |
 | World | 2021 | 1-6d | True | 70 | 65 | 8 | 510224 |
 | World | 2021 | 30-90d | False | 1 | 1 | 1 | 0 |
 | World | 2021 | 30-90d | True | 6 | 6 | 6 | 99193 |

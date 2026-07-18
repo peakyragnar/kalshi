@@ -13,6 +13,19 @@ class EmptyClient:
         return iter(())
 
 
+def test_structural_exclusions_only_keep_sports_adjacent_ticket_prices():
+    assert candidates.STRUCTURAL_EXCLUSIONS == {
+        "KXWCPRICE", "KXNHLPRICE", "KXNBAFINALSPRICE",
+    }
+    assert "KXRTICKET" not in candidates.BLACKLIST
+    assert "KXDTICKET" not in candidates.BLACKLIST
+    assert "KXFED" not in candidates.BLACKLIST
+    assert "KXFEDDECISION" not in candidates.BLACKLIST
+    assert "KXPAYROLLS" not in candidates.BLACKLIST
+    assert "KXGDP" not in candidates.BLACKLIST
+    assert candidates.RED <= candidates.BLACKLIST
+
+
 def test_zero_candidate_day_writes_valid_empty_outputs(tmp_path, monkeypatch):
     series_path = tmp_path / "series.parquet"
     pl.DataFrame(

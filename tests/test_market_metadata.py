@@ -3,6 +3,7 @@ import polars as pl
 from kalshi_data.ingest.market_metadata import (
     fetch_market_metadata,
     fetch_series_metadata,
+    metadata_gaps,
     metadata_row,
     normalize_metadata_frame,
 )
@@ -59,3 +60,18 @@ def test_metadata_shards_normalize_integer_strikes_to_float_schema():
     frame = normalize_metadata_frame([row])
     assert frame.schema["floor_strike"] == pl.Float64
     assert frame.schema["cap_strike"] == pl.Float64
+
+
+def test_ticker_gap_repair_only_selects_current_deployment_series():
+    raw = pl.DataFrame({
+        "ticker": ["DEPLOY-M", "SPORT-M"],
+        "series_ticker": ["DEPLOY", "SPORT"],
+    })
+    stored = pl.DataFrame({"ticker": []}, schema={"ticker": pl.String})
+    deployment_series = pl.DataFrame({
+        "ticker": ["DEPLOY"], "category": ["Economics"], "tier": ["deployment"]
+    })
+
+    gaps = metadata_gaps(raw, stored, deployment_series)
+
+    assert gaps["ticker"].to_list() == ["DEPLOY-M"]

@@ -4,7 +4,7 @@ Pipeline (market-structure.md Part 2 + rulebook-sweep selection rules):
   1. open markets in Politics / Financials deployment series
   2. entry window: Politics 20-45d to close; Financials 60-120d
   3. YES price band (from live book): Politics ask <= 5c; Financials ask <= 10c
-  4. exclusions: RED rulebooks, ticket-price series, professionally-priced list
+  4. exclusions: semantic sports/crypto tier, RED rulebooks, and reviewed structural exclusions
   5. emit: ticker, days, suggested NO rest price (= 100 - yes_ask, joining the
      bid), volume, and rulebook verdict if swept
 """
@@ -22,8 +22,7 @@ from ..core.parse import cents
 from ..core.paths import CANDIDATES, REPORTS as REPORTS_DIR, RULEBOOK_VERDICTS, SERIES
 
 STRUCTURAL_EXCLUSIONS = {
-    "KXRTICKET", "KXDTICKET", "KXWCPRICE", "KXNHLPRICE", "KXNBAFINALSPRICE",  # tickets
-    "KXFED", "KXFEDDECISION", "KXPAYROLLS", "KXGDP",             # professionally priced
+    "KXWCPRICE", "KXNHLPRICE", "KXNBAFINALSPRICE",
 }
 VERDICTS: dict = json.loads(RULEBOOK_VERDICTS.read_text())
 GREEN = {t for t, v in VERDICTS.items() if v["verdict"] == "GREEN"}

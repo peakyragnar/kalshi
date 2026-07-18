@@ -1,6 +1,6 @@
 # Metadata-dependent mechanism results
 
-Canonical historical metadata coverage: **2,733,070 / 2,733,070 markets**. The API returned **18,818** additional settled tickers, which are retained but do not enter the canonical universe without a join.
+Canonical historical metadata coverage: **2,867,025 / 2,888,361 markets**. The API returned **18,818** additional settled tickers, which are retained but do not enter the canonical universe without a join.
 
 ## Rule-language mechanism
 
@@ -13,14 +13,14 @@ These are asynchronous last-trade calibration comparisons, not executable arbitr
 | direction | horizon | fold | pairs | events | gaps >=2c | rate | mean signed gap | within 5m | sync gap rate |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|
 | above | T-1d | early | 1,268 | 309 | 137 | 10.80% | -14.920c | 12.15% | 3.25% |
-| above | T-1d | middle | 2,997 | 529 | 197 | 6.57% | -12.373c | 20.65% | 1.29% |
-| above | T-1d | recent | 20,370 | 1,629 | 2,701 | 13.26% | -5.645c | 23.50% | 5.47% |
+| above | T-1d | middle | 4,291 | 704 | 342 | 7.97% | -11.822c | 17.04% | 1.50% |
+| above | T-1d | recent | 25,135 | 2,212 | 3,187 | 12.68% | -5.985c | 23.31% | 5.22% |
 | above | T-30d | early | 576 | 105 | 76 | 13.19% | -8.311c | 20.49% | 4.24% |
-| above | T-30d | middle | 873 | 226 | 75 | 8.59% | -14.420c | 13.75% | 1.67% |
-| above | T-30d | recent | 1,829 | 350 | 144 | 7.87% | -10.724c | 17.44% | 4.70% |
+| above | T-30d | middle | 1,195 | 306 | 98 | 8.20% | -14.854c | 12.22% | 2.74% |
+| above | T-30d | recent | 2,435 | 455 | 182 | 7.47% | -10.640c | 16.06% | 3.58% |
 | above | T-7d | early | 860 | 155 | 111 | 12.91% | -9.602c | 13.26% | 4.39% |
-| above | T-7d | middle | 1,685 | 367 | 114 | 6.77% | -14.771c | 12.46% | 1.90% |
-| above | T-7d | recent | 5,697 | 770 | 607 | 10.65% | -8.687c | 16.62% | 3.70% |
+| above | T-7d | middle | 2,558 | 523 | 195 | 7.62% | -14.346c | 11.88% | 1.64% |
+| above | T-7d | recent | 7,675 | 1,026 | 779 | 10.15% | -8.724c | 16.13% | 3.96% |
 | below | T-1d | early | 22 | 14 | 4 | 18.18% | -1.227c | 4.55% | 0.00% |
 | below | T-1d | middle | 42 | 20 | 7 | 16.67% | -1.905c | 11.90% | 0.00% |
 | below | T-1d | recent | 48 | 11 | 5 | 10.42% | -4.646c | 12.50% | 0.00% |

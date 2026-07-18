@@ -6,7 +6,15 @@ import json
 
 import polars as pl
 
-from . import atlas, corpus_audit, mechanism_suite, metadata_suite, research_panel, survivor_audit
+from . import (
+    atlas,
+    corpus_audit,
+    derive,
+    mechanism_suite,
+    metadata_suite,
+    research_panel,
+    survivor_audit,
+)
 from ..core.paths import CHECKPOINTS, SERIES
 
 
@@ -27,6 +35,7 @@ def run() -> None:
             "market metadata backfill is incomplete; run "
             "python -m kalshi_data.ingest.market_metadata first"
         )
+    derive.run()
     corpus_audit.run()
     research_panel.run()
     atlas.run()

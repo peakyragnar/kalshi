@@ -5,7 +5,9 @@ from __future__ import annotations
 
 import polars as pl
 
-from ..core.paths import MARKETS, RESEARCH as REPORTS_DIR
+from ..core.parquet import read_shards
+from ..core.paths import MARKETS, RESEARCH as REPORTS_DIR, SERIES
+from ..core.tiers import apply_current_tiers
 
 
 def _md_table(df: pl.DataFrame) -> list[str]:
@@ -18,7 +20,7 @@ def _md_table(df: pl.DataFrame) -> list[str]:
 
 
 def run() -> str:
-    df = pl.read_parquet(MARKETS / "*.parquet")
+    df = apply_current_tiers(read_shards(MARKETS), pl.read_parquet(SERIES))
     df = df.with_columns(
         pl.col("close_time").str.to_datetime(time_zone="UTC", strict=False).dt.year().alias("year")
     )

@@ -9,10 +9,26 @@ import polars as pl
 from .atlas import add_periods
 from .mechanism_suite import CARRY_APY, _base_panel, build_path_rows
 from .screens import cell_stats
-from ..core.paths import MARKET_METADATA, RESEARCH, SURVIVOR_AUDIT, TRADES
+from ..core.parquet import read_shards
+from ..core.paths import MARKET_METADATA, MECHANISM_RESULTS, RESEARCH, SURVIVOR_AUDIT, TRADES
 
 
 CANDIDATE_ID = "T-1d->T-6h|-2:2|01-05|no"
+CANDIDATE_FAMILY_ID = "price-path-dependence"
+
+
+def is_registered_survivor(
+    cells: pl.DataFrame, family_id: str, cell_id: str
+) -> bool:
+    return bool(
+        len(
+            cells.filter(
+                (pl.col("family_id") == family_id)
+                & (pl.col("cell_id") == cell_id)
+                & pl.col("historically_qualified")
+            )
+        )
+    )
 
 
 def match_candidate_prints(path: pl.DataFrame, tape: pl.DataFrame) -> pl.DataFrame:
@@ -66,7 +82,7 @@ def _candidate_fills() -> pl.DataFrame:
         path = path.with_columns(
             pl.lit(None).cast(pl.Datetime(time_zone="UTC")).alias("settled_time")
         )
-    tape = pl.read_parquet(TRADES / "*.parquet").select(
+    tape = read_shards(TRADES).select(
         "ticker", "created_time", "taker_side", "count", "yes_price_cents", "is_block_trade"
     ).with_columns(
         pl.col("created_time").str.to_datetime(time_zone="UTC", strict=False).alias("trade_time")
@@ -172,6 +188,18 @@ def _report(fills: pl.DataFrame, stats: pl.DataFrame) -> str:
 
 
 def run() -> None:
+    cells = pl.read_parquet(MECHANISM_RESULTS)
+    if not is_registered_survivor(cells, CANDIDATE_FAMILY_ID, CANDIDATE_ID):
+        SURVIVOR_AUDIT.parent.mkdir(parents=True, exist_ok=True)
+        pl.DataFrame(schema={"cell_id": pl.String}).write_parquet(SURVIVOR_AUDIT)
+        (RESEARCH / "survivor-audit.md").write_text(
+            "# Survivor execution audit\n\n"
+            "No registered historical survivor is available for execution audit. "
+            f"The previously audited cell `{CANDIDATE_ID}` is absent or did not pass "
+            "all folds plus family- and suite-wide FDR in the current rebuilt suite.\n"
+        )
+        print("survivor audit: no registered historical survivor", flush=True)
+        return
     fills = _candidate_fills()
     stats = _fold_stats(fills)
     SURVIVOR_AUDIT.parent.mkdir(parents=True, exist_ok=True)

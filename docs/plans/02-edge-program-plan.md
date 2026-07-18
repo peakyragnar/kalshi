@@ -67,7 +67,7 @@ week against the same kill discipline; survivors join the map.
 listing-anchored snapshot grid; ladder-relationship table; Polymarket feed
 (later).
 
-**Status 2026-07-17:** canonical 758,479-row decision panel, isolated outcomes,
+**Status 2026-07-18:** canonical 1,106,075-row decision panel, isolated outcomes,
 event relationships, deterministic registry, three-fold atlas, FDR correction,
 and sealed-forward boundary delivered. Atlas v1 tested 722 cells: one survived
 the economic folds before FDR and none survived after FDR. Flow shock is RED.

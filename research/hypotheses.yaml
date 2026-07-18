@@ -9,7 +9,7 @@
       "status": "registered",
       "retroactive": false,
       "contract": {
-        "universe": "deployment categories; sports, parlays, and crypto excluded",
+        "universe": "all categories except semantically classified sports and crypto series; KXMVE parlays and versioned RED rulebooks excluded",
         "signal": "registered category x close-horizon x YES-price cell; take NO side",
         "entry": "last public trade at the decision timestamp; calibration proxy, not an assumed fill",
         "exit": "hold to settlement",
@@ -24,7 +24,7 @@
       },
       "filters": {"max_staleness_fraction": 0.20},
       "dimensions": {
-        "categories": ["Climate and Weather", "Commodities", "Companies", "Economics", "Elections", "Financials", "Health", "Politics", "Science and Technology", "World"],
+        "categories": ["Climate and Weather", "Commodities", "Companies", "Economics", "Education", "Elections", "Entertainment", "Financials", "Health", "Mentions", "Politics", "Science and Technology", "Social", "Transportation", "World"],
         "decision_labels": ["T-1h", "T-6h", "T-1d", "T-3d", "T-7d", "T-30d", "T-90d", "T-180d", "T-365d"],
         "price_buckets": [[1, 5], [6, 10], [11, 20], [21, 40], [41, 60], [61, 80], [81, 95], [96, 99]]
       },
@@ -75,7 +75,7 @@
       },
       "filters": {
         "categories": ["Financials"], "decision_labels": ["T-90d"], "yes_price_min": 1, "yes_price_max": 10,
-        "exclude_series": ["KXNBAFINALSPRICE", "KXWCPRICE", "KXNHLPRICE", "KXRTICKET", "KXDTICKET"],
+        "exclude_series": ["KXNBAFINALSPRICE", "KXWCPRICE", "KXNHLPRICE"],
         "max_staleness_fraction": 0.20
       },
       "gate": {"hurdle": 0.07, "minimum_events": 50, "z": 2.0}

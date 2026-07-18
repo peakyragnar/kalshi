@@ -46,10 +46,13 @@ A cell qualifies only if annualized net edge > 7.0% **and** > 2 clustered standa
 Two tiers. Measured 2026-07-15: ~99% of daily settled markets are `KXMVE*` parlays;
 crypto ladders dominate the remainder; ~800–1,000 real markets/day clear a 25-trade filter.
 
-- **Deployment tier** (capital candidates): Economics, Climate & Weather, Financials
-  (long-dated only — daily/hourly crypto ladders excluded), Politics & World Events,
-  Companies, Science & Tech. Full settled history ingested.
-- **Instrumentation tier** (measured, never traded): sports, crypto ladders. Feeds
+- **Deployment tier** (structural-research candidates): every exchange category except
+  crypto- and sports-themed series. Both are classified semantically because Kalshi
+  labels some of those contracts as Mentions, Companies, Politics, or other categories.
+  A category is never excluded merely because it is assumed to be professionally priced.
+  Versioned RED rulebooks remain in raw storage but are removed from the research panel
+  and live candidates.
+- **Instrumentation tier** (measured, never traded): sports- and crypto-themed series. Feeds
   Screens A and D only (calibration baseline, spread/adverse-selection estimates).
 - Excluded everywhere: `KXMVE*` parlay markets (ticker-prefix filter at ingest; volume
   tallied separately as a flow datum).
@@ -110,3 +113,23 @@ from Phase 1 day 1) × observed turnover at that cell. Cells ranked by edge × c
   remain excluded by operator decision. Short-duration screens use the same
   registered economic/statistical gate but are reported with per-hold returns
   because annualization is mechanically unstable at intraday horizons.
+- **2026-07-18 (operator universe expansion):** added Education, Entertainment,
+  Mentions, Social, and Transportation to deployment research; restored Fed,
+  payroll, GDP, Elections, and presidential-ticket series. The Transportation
+  omission was a classifier bug: substring `sport` matched `transportation`.
+  Remaining exclusions are exactly sports- and crypto-themed series, `KXMVE*` parlays, and the
+  versioned RED-rulebook series. This expansion occurred after the first suite
+  results, so the complete search and suite-wide FDR are rerun and documented.
+- **2026-07-18 (sports boundary correction):** exact category matching admitted 128
+  sports-themed series that Kalshi labels under Mentions, Entertainment, Politics,
+  Companies, Financials, Transportation, World, and other categories. Replaced it with
+  reviewed title/tag/exact-series classification using word boundaries; retained explicit
+  false-positive tests for Transportation, Coachella, NBA Youngboy, Lake Michigan, and
+  Michelin. Raw rows remain stored, while current series tiers are joined at trade and
+  research-panel construction so these contracts cannot enter actionable inference.
+- **2026-07-18 (crypto boundary correction):** exact category matching admitted 38
+  crypto-themed series that Kalshi labels under Companies, Politics, Financials, and
+  other categories. Crypto now uses reviewed title/tag word-boundary classification too.
+  DOGE government-efficiency and Cryptosporidium are regression cases preventing
+  substring leakage. Raw rows remain stored; current series tiers remove these contracts
+  from research panels and live candidates.

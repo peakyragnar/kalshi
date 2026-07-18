@@ -8,10 +8,14 @@ volume; joined to settlement outcome and fee metadata.
 
 from __future__ import annotations
 
+import json
 
 import polars as pl
 
-from ..core.paths import DERIVED, MARKETS, TRADES
+from ..core.parquet import read_shards
+from ..core.paths import DERIVED, MARKETS, RULEBOOK_VERDICTS, SERIES, TRADES
+from ..core.tiers import apply_current_tiers
+from .research_panel import exclude_red_rulebooks
 HORIZONS_DAYS = (7, 30, 90, 180, 365)
 
 
@@ -85,8 +89,10 @@ def build_snapshots(markets: pl.DataFrame, trades: pl.DataFrame) -> pl.DataFrame
 
 def run() -> None:
     markets = (
-        pl.read_parquet(MARKETS / "*.parquet")
-        .filter(pl.col("result").is_in(["yes", "no"]))
+        apply_current_tiers(read_shards(MARKETS), pl.read_parquet(SERIES))
+        .filter(
+            (pl.col("tier") == "deployment") & pl.col("result").is_in(["yes", "no"])
+        )
         .with_columns(
             pl.col("open_time").str.to_datetime(time_zone="UTC", strict=False),
             pl.col("close_time").str.to_datetime(time_zone="UTC", strict=False),
@@ -94,9 +100,11 @@ def run() -> None:
             pl.col("settled_time").cast(pl.String).str.to_datetime(time_zone="UTC", strict=False),
         )
     )
-    trades = pl.read_parquet(
-        TRADES / "*.parquet",
-        columns=["ticker", "created_time", "yes_price_cents", "count"],
+    markets = exclude_red_rulebooks(
+        markets, json.loads(RULEBOOK_VERDICTS.read_text())
+    )
+    trades = read_shards(
+        TRADES, columns=["ticker", "created_time", "yes_price_cents", "count"]
     ).with_columns(pl.col("created_time").str.to_datetime(time_zone="UTC", strict=False))
     snaps = build_snapshots(markets, trades)
     out = DERIVED

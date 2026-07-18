@@ -7,10 +7,10 @@ evidence lands (forward settlements, recorder depth, live scans). This document
 records what the data supports — the deployment decision itself belongs to the
 operator and is gated by the Phase 3 map and the pre-committed kill rule.
 
-**Data basis (as of 2026-07-18):** 2.733M settled deployment-tier markets (2021→2026),
-47.342M fills with aggressor side, 758,479 leakage-resistant decision points,
-complete canonical title/strike/rule metadata, actual settlement timestamps for
-2,732,848 of 2,732,916 outcome rows, and order-book depth recorder live since
+**Data basis (as of 2026-07-18):** 2.888M settled raw markets (2021→2026),
+67.290M fills with aggressor side, 1,106,075 leakage-resistant decision points,
+complete deployment title/strike/rule metadata, actual settlement timestamps missing for
+only 68 raw markets, and order-book depth recorder live since
 2026-07-15. Full reports: `research/screen_a.md`, `screen_d.md`, `screen_b.md`,
 `corpus-audit.md`, `edge-atlas.md`, `mechanism-suite.md`, `metadata-suite.md`,
 and `survivor-audit.md`.
@@ -46,9 +46,9 @@ The original atlas tested 722 category × horizon × price cells and produced ze
 FDR qualifiers. The expanded suite now executes the previously missing
 mechanisms: listing lifecycle, own-price path, sibling lead/lag, aggressor flow,
 recent activity, staleness, recurring series, calendar, early close, event
-structure, settlement source, maker selection, and rule language. Across 36,472
-statistical cells, seven passed all three folds, two survived family FDR, and one
-survived suite-wide FDR. This is direct evidence that isolated high-return cells
+structure, settlement source, maker selection, and rule language. Across 55,236
+statistical cells, six passed all three folds, one survived family FDR, and none
+survived every gate plus suite-wide FDR. This is direct evidence that isolated high-return cells
 are easy to manufacture from the corpus and must be judged against the entire
 search. *(Edge atlas v1; Multi-mechanism suite v1)*
 
@@ -99,22 +99,15 @@ free. APY (3.25%, variable) accrues on cash AND open positions
 ~51bps. **Open question: does cash escrowed behind unfilled resting orders
 accrue?** (Assume no until Kalshi confirms — prices the cost of waiting for fills.)
 
-### F10. One non-term mechanism survives: a near-flat last-day path on the NO maker side
-The only suite-wide survivor is `T-1d->T-6h|-2:2|01-05|no`: at T−6h the YES
-price is 1–5¢ and changed by at least −2¢ but less than +2¢ since T−1d, after a
-new trade in that interval. It contains 21,812 decisions and at least 1,079
-independent events per fold; family q=0.000096 and suite q=0.012157. Its weakest
-absolute annualized two-standard-error lower bound is 401%, but the weakest
-matched-baseline uplift lower bound is only 0.97% annualized, so the incremental
-margin is real under the registered test but thin in the early fold.
-
-Execution role is decisive. Historical prints where the desired NO side was the
-maker earned mean hold returns of 1.47%, 1.25%, and 1.04% in the early, middle,
-and recent folds; the corresponding taker-NO lower bounds were negative in all
-three. The candidate is therefore **maker-only and shadow-only**. Climate and
-Weather supplied 63.9% of matched maker contracts, which prioritizes a
-point-in-time NOAA forecast test but does not create a separately qualified
-weather edge. *(Multi-mechanism suite v1; Survivor execution audit)*
+### F10. The expanded suite has no historical survivor
+The previously reported path cell `T-1d->T-6h|-2:2|01-05|no` still shows large
+absolute NO returns and at least 1,119 independent events in its weakest fold,
+but it fails the matched-baseline economic gate: its weakest incremental
+annualized two-standard-error lower bound is −0.030996. Small corrected q-values
+do not override a failed pre-committed economic condition. The expanded suite
+therefore has **zero historical qualifiers**, and the execution audit is
+suppressed rather than continuing to label the old cell a survivor.
+*(Multi-mechanism suite v1; Survivor execution audit)*
 
 ---
 
@@ -127,19 +120,19 @@ After the timing correction, the evidence supports only this narrow posture:
   1–20¢ rule from pooled results.
 - **Horizon:** the existing Politics cell is T−30d. Duration itself is not an
   edge and no blanket 30–90d rule survives the systematic atlas.
-- **Universe:** deployment categories (econ, climate, politics, world, companies,
-  sci-tech, commodities, health) **minus** an exclusion list of professionally
-  priced series (Fed, Payrolls, GDP class — formalized per-cell by the map) and
-  minus Elections (arbed). No sports, no parlays, no crypto ladders (decision,
-  Phase 0).
+- **Universe:** every exchange category is eligible for structural research
+  except crypto- and sports-themed series, including contracts Kalshi labels in
+  other categories. `KXMVE*` parlays and versioned RED rulebooks are
+  excluded. Fed, payroll, GDP, Elections, Transportation, Entertainment,
+  Mentions, Social, Education, and presidential-ticket series are included; no
+  market is excluded merely because it is presumed professionally priced.
 - **Diversification:** many small positions across unrelated events; losses
   cluster (F6), so event concentration is the primary portfolio risk.
 - **Financials T−90:** withdrawn as a qualified cell after the timing correction;
   no new entry should be inferred from the old memo. Existing orders/positions
   require an operator decision and were not changed by research code.
-- **New discovery:** one historically qualified shadow candidate: near-flat
-  T−1d→T−6h path, 1–5¢ YES, resting NO maker only. It is not authorized for live
-  orders and does not alter the legacy deployment rules.
+- **New discovery:** no cell is historically qualified after the expanded
+  universe and full suite correction. No new shadow or live rule is created.
 
 **What would falsify it going forward:** the calibration gap closing in newly
 settled markets; maker-taker gap compressing (professionalizing flow); fill
@@ -155,10 +148,9 @@ rates collapsing. All three are tracked automatically (below).
    systematic qualification.
 2. **Financials T−90d YES 1–10¢ ex-ticket:** middle-fold lower bound is −13.1%
    and the corrected legacy map also fails. Status: **RED / qualification withdrawn**.
-3. **Complete mechanism suite:** 36,472 cells across 15 executable families;
-   one path cell survives suite FDR at q=0.012157. Status: **HISTORICALLY
-   QUALIFIED / SHADOW ONLY** because historical books cannot establish fill
-   probability or available depth.
+3. **Complete mechanism suite:** 55,236 cells across 15 statistical families;
+   six pass all folds, one survives family FDR, and none clears the full
+   suite-wide gate. Status: **ZERO HISTORICAL QUALIFIERS**.
 4. **Forward validation:** observations from 2026-07-17 onward are sealed and
    cannot be reused to invent gates.
 5. **Execution:** historical books remain unavailable; only captured books and
@@ -176,9 +168,9 @@ rates collapsing. All three are tracked automatically (below).
 
 | Screen | Verdict | Evidence | Consequence |
 |---|---|---|---|
-| Structural atlas v1 (`research/edge-atlas.md`) | **ZERO QUALIFIERS** | 722 registered cells; one passed all folds pre-FDR (Economics T−30d YES 11–20¢), then failed q=0.110. | No new cell; begin external-data work only as a selection layer or newly registered test. |
-| Multi-mechanism suite v1 (`research/mechanism-suite.md`) | **ONE HISTORICAL QUALIFIER** | 36,472 cells across 15 executable families; seven three-fold passes, two family-FDR passes, one suite-FDR pass. | Shadow the near-flat T−1d→T−6h 1–5¢ YES / maker-NO path; do not deploy from historical tape alone. |
-| Metadata structure (`research/metadata-suite.md`) | **DESCRIPTIVE ONLY** | 36,416 adjacent ladder pairs and 125 complete exclusive-event observations; synchronous-price coverage is sparse. | Use live books to test simultaneous leg execution; do not label asynchronous last-print gaps arbitrage. |
+| Structural atlas v1 (`research/edge-atlas.md`) | **ZERO QUALIFIERS** | 1,082 registered cells; one passed all folds pre-FDR (Economics T−30d YES 11–20¢), then failed q=0.163. | No new cell; begin external-data work only as a selection layer or newly registered test. |
+| Multi-mechanism suite v1 (`research/mechanism-suite.md`) | **ZERO HISTORICAL QUALIFIERS** | 55,236 cells across 15 statistical families; six three-fold passes, one family-FDR pass, zero full-suite passes. | Do not preserve the old path cell as a survivor; new mechanisms require registration or point-in-time external data. |
+| Metadata structure (`research/metadata-suite.md`) | **DESCRIPTIVE ONLY** | 46,254 adjacent ladder pairs and 125 complete exclusive-event observations; synchronous-price coverage is sparse. | Use live books to test simultaneous leg execution; do not label asynchronous last-print gaps arbitrage. |
 | Flow-shock overshoot (`research/flow_shock.md`) | **RED** | Corrected timing: 3,217 shocks, median seven-day YES change −3¢ in both periods. Discovery reversion, absolute return, and uplift all fail the 2SE gate. | Do not add a pooled post-shock entry rule. |
 
 ## Change log
@@ -228,10 +220,11 @@ rates collapsing. All three are tracked automatically (below).
   folds with event clustering and FDR. Zero qualified. Politics T−30 retains
   strong economics but lacks early-fold support; Financials T−90 is RED and its
   prior qualification is withdrawn. No live order was changed automatically.
-- 2026-07-18: Completed the registered multi-mechanism suite over the full
-  corpus and historical metadata. Of 36,472 statistical cells, one near-flat
-  last-day price-path / maker-NO cell survived all economic, support, matched
-  baseline, family-FDR, and suite-FDR gates. Execution reconstruction confirms
-  maker-side positive fold evidence and rejects crossing as robust; status is
-  shadow-only pending forward books/fills. Ladder and event-sum scans remain
-  descriptive because historical last prints are asynchronous.
+- 2026-07-18: Expanded the corpus to every category except semantically
+  classified sports and crypto series; restored macro, elections,
+  entertainment, mentions, social, education, and transportation. Final corpus:
+  67,289,825 trades and 1,106,075 decision points. Of 55,236 statistical cells,
+  six passed all folds, one survived family FDR, and none cleared the complete
+  suite-wide gate. The prior near-flat path label is withdrawn because its
+  weakest matched-baseline lower bound is negative. Ladder and event-sum scans
+  remain descriptive because historical last prints are asynchronous.

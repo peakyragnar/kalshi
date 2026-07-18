@@ -1,10 +1,10 @@
 # Kalshi Market Structure Project
 
 Research and operations for systematic Kalshi market-structure discovery.
-The complete registered structural suite tests **36,472 cells across 15
-executable mechanism families**. One price-path cell survives all three folds,
-economic and matched-baseline gates, and family- plus suite-wide FDR. It is a
-historically qualified shadow candidate, not a deployment instruction. The
+The complete registered structural suite tests **55,236 cells across 15
+statistical mechanism families**. Six cells pass all three folds, one survives
+family correction, and none clears every gate plus suite-wide FDR. There is no
+new historical survivor or deployment instruction. The
 legacy Politics T−30d cell remains live monitored with insufficient early-fold
 support; Financials T−90d is withdrawn. Existing orders and positions are shown
 on the local dashboard, and research never changes them automatically. All
@@ -27,7 +27,7 @@ deployment decisions belong to the operator.
 | `docs/research-system.md` | canonical panel, registry, atlas, validation and as-of feature contract |
 | `research/hypotheses.yaml` | pre-registered structural search space and gates |
 | `research/mechanism-suite-v1.yaml` | registered multi-mechanism search contract |
-| `research/systematic-alpha-results.md` | concise suite funnel, survivor, execution evidence, and rejected mechanisms |
+| `research/systematic-alpha-results.md` | concise suite funnel, near misses, and rejected mechanisms |
 | `src/kalshi_data/operations/` | candidate list, shadow book, dashboard |
 | `src/kalshi_data/watchers/` | external-data tail watchers (congressional calendar) |
 | `src/kalshi_data/features/` | point-in-time external feature store and EDGAR adapter |
@@ -62,9 +62,10 @@ uv run python -m kalshi_data.features.edgar          # SEC registration observat
 ```
 
 Full rebuild from nothing: `ingest.series` → `ingest.markets --tier deployment`
-→ `ingest.trades --tier deployment --min-lifetime-days 0` → `analysis.derive`
-→ `ingest.market_metadata` → `analysis.full_suite`.
-Checkpointed and resumable. Sports, parlays, and crypto remain outside this build.
+→ `ingest.trades --tier deployment --min-lifetime-days 0`
+→ `ingest.market_metadata` → `analysis.full_suite` (which rebuilds derived tables first).
+Checkpointed and resumable. Only sports- and crypto-themed series, `KXMVE*` parlays,
+and versioned RED rulebooks remain outside actionable research.
 
 ## Automation (launchd)
 
@@ -72,15 +73,14 @@ Checkpointed and resumable. Sports, parlays, and crypto remain outside this buil
 |---|---|---|
 | `com.exascale.kalshi-recorder` | 06:10 / 12:10 / 18:10 / 23:50 | book depth snapshots |
 | `com.exascale.kalshi-daily` | 13:15 | incremental ingest → candidates → Senate/EDGAR observations → shadow/portfolio → dashboard |
-| `com.exascale.kalshi-weekly` | Mon 14:00 | metadata refresh → full structural suite → legacy edge health → dashboard |
+| `com.exascale.kalshi-weekly` | Mon 14:00 | catalog → market/tape/metadata backfill → full suite → legacy edge health → dashboard |
 | `com.exascale.kalshi-shadow` | every 4h (02:20…22:20) | shadow book fill check → dashboard |
 
 Install: `cp ops/*.plist ~/Library/LaunchAgents/ && launchctl load ~/Library/LaunchAgents/com.exascale.kalshi-*.plist`
 
 ## Standing rules
 
-- No new cell is deployment-qualified. One cell is historically qualified for
-  shadow validation only. Existing live exposure remains an
+- No new cell is historically or deployment-qualified. Existing live exposure remains an
   operator decision; UNSWEPT is untouchable and RED rulebooks never trade.
 - Sizing: $250/position Politics, ×½ per AMBER cell light, ×½ per YELLOW
   rulebook, one position per event.

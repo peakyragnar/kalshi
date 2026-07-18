@@ -10,8 +10,8 @@ orders or change deployment rules.
   concentration, fees, carry, and independent-event support included.
 - **Evidence:** settled deployment markets, public trade tape, capture-only live
   books, and point-in-time external observations.
-- **Constraints:** sports, parlays, and crypto are out of scope; historical books
-  do not exist; Michael alone approves deployment.
+- **Constraints:** sports-themed series, Crypto, `KXMVE*` parlays, and versioned RED rulebooks
+  are out of scope; historical books do not exist; Michael alone approves deployment.
 - **Falsifier:** failure to replicate across early, middle, recent, and then
   sealed-forward periods, or failure to support executable size.
 

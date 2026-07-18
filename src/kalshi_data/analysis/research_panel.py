@@ -9,10 +9,22 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import datetime as dt
+import json
 
 import polars as pl
 
-from ..core.paths import DECISION_POINTS, MARKET_METADATA, MARKET_RELATIONS, MARKETS, OUTCOMES, TRADES
+from ..core.parquet import read_shards
+from ..core.tiers import apply_current_tiers
+from ..core.paths import (
+    DECISION_POINTS,
+    MARKET_METADATA,
+    MARKET_RELATIONS,
+    MARKETS,
+    OUTCOMES,
+    RULEBOOK_VERDICTS,
+    SERIES,
+    TRADES,
+)
 
 
 @dataclass(frozen=True)
@@ -36,6 +48,14 @@ DEFAULT_SPECS = (
     DecisionSpec("listing", "L+7d", dt.timedelta(days=7)),
     DecisionSpec("listing", "L+30d", dt.timedelta(days=30)),
 )
+
+
+def exclude_red_rulebooks(markets: pl.DataFrame, verdicts: dict) -> pl.DataFrame:
+    """Remove only series with a versioned, objectively RED rulebook verdict."""
+    excluded = sorted(
+        ticker for ticker, verdict in verdicts.items() if verdict.get("verdict") == "RED"
+    )
+    return markets.filter(~pl.col("series_ticker").is_in(excluded))
 
 
 def _dt_expr(df: pl.DataFrame, name: str) -> pl.Expr:
@@ -195,8 +215,13 @@ def build_market_relations(markets: pl.DataFrame) -> pl.DataFrame:
 
 
 def run() -> None:
-    markets = pl.read_parquet(MARKETS / "*.parquet").filter(pl.col("result").is_in(["yes", "no"]))
-    trades = pl.read_parquet(TRADES / "*.parquet")
+    markets = apply_current_tiers(
+        read_shards(MARKETS), pl.read_parquet(SERIES)
+    ).filter(
+        (pl.col("tier") == "deployment") & pl.col("result").is_in(["yes", "no"])
+    )
+    markets = exclude_red_rulebooks(markets, json.loads(RULEBOOK_VERDICTS.read_text()))
+    trades = read_shards(TRADES)
     # Expand decision grids only for markets with tape. This reduces the
     # 2.7M-market catalog to the economically observable subset before the
     # twelve decision anchors are materialized.

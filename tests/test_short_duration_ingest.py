@@ -1,7 +1,10 @@
 import datetime as dt
+import threading
 
+import httpx
 import polars as pl
 
+from kalshi_data.ingest import trades
 from kalshi_data.ingest.trades import eligible_markets_from_frame, fetch_market_trades
 
 
@@ -51,3 +54,59 @@ def test_lifetime_filter_uses_trading_close_not_rescheduling_ceiling():
         "expiration_time": [end + dt.timedelta(days=7)],
     })
     assert len(eligible_markets_from_frame(markets, "deployment", min_lifetime_days=6)) == 0
+
+
+def test_parallel_run_commits_trade_rows_and_market_checkpoint(monkeypatch, tmp_path):
+    now = dt.datetime(2026, 7, 18, tzinfo=UTC)
+    eligible = pl.DataFrame(
+        {
+            "ticker": ["M1", "M2"],
+            "open_time": [now - dt.timedelta(days=1)] * 2,
+            "end_time": [now] * 2,
+        }
+    )
+    monkeypatch.setattr(trades, "eligible_markets", lambda *_: eligible)
+    monkeypatch.setattr(trades, "trade_cutoff", lambda _: now)
+    monkeypatch.setattr(trades, "CHECKPOINT", tmp_path / "checkpoint.json")
+    monkeypatch.setattr(trades, "TRADES_DIR", tmp_path / "shards")
+
+    def fake_worker(task):
+        market, _, _ = task
+        ticker = market["ticker"]
+        return ticker, [{
+            "ticker": ticker,
+            "trade_id": f"trade-{ticker}",
+            "created_time": now.isoformat(),
+            "yes_price_cents": 50.0,
+            "count": 1.0,
+            "taker_side": "yes",
+            "is_block_trade": False,
+        }], None
+
+    monkeypatch.setattr(trades, "_fetch_worker", fake_worker)
+    trades.run("deployment", workers=2)
+
+    assert set(trades._load_checkpoint()["done"]) == {"M1", "M2"}
+    assert pl.read_parquet(tmp_path / "shards" / "*.parquet").sort("ticker")["ticker"].to_list() == [
+        "M1",
+        "M2",
+    ]
+
+
+def test_worker_records_historical_404_as_unavailable(monkeypatch):
+    now = dt.datetime(2026, 7, 18, tzinfo=UTC)
+    monkeypatch.setattr(trades, "_thread_state", threading.local())
+
+    def unavailable(*args, **kwargs):
+        request = httpx.Request("GET", "https://example.test/historical/trades")
+        response = httpx.Response(404, request=request)
+        raise httpx.HTTPStatusError("missing", request=request, response=response)
+
+    monkeypatch.setattr(trades, "fetch_market_trades", unavailable)
+    ticker, rows, error = trades._fetch_worker((
+        {"ticker": "MISSING", "open_time": now, "end_time": now}, now, 1.0
+    ))
+
+    assert ticker == "MISSING"
+    assert rows == []
+    assert "404" in error

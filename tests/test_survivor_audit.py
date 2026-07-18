@@ -4,7 +4,9 @@ import polars as pl
 import pytest
 
 from kalshi_data.analysis.survivor_audit import (
+    CANDIDATE_FAMILY_ID,
     add_fill_execution_economics,
+    is_registered_survivor,
     match_candidate_prints,
 )
 
@@ -42,3 +44,15 @@ def test_candidate_print_match_requires_exact_price_at_shared_timestamp():
     out = match_candidate_prints(path, tape)
     assert len(out) == 1
     assert out.row(0, named=True)["count"] == 10
+
+
+def test_execution_audit_only_runs_for_suite_qualified_candidate():
+    cells = pl.DataFrame({
+        "family_id": ["price-path-dependence", "price-path-dependence"],
+        "cell_id": ["wanted", "other"],
+        "historically_qualified": [False, True],
+    })
+
+    assert CANDIDATE_FAMILY_ID == "price-path-dependence"
+    assert not is_registered_survivor(cells, CANDIDATE_FAMILY_ID, "wanted")
+    assert is_registered_survivor(cells, CANDIDATE_FAMILY_ID, "other")

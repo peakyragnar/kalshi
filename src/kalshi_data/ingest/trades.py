@@ -15,18 +15,26 @@ contribute to the legacy T-7d snapshot grid.
 from __future__ import annotations
 
 import argparse
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 import datetime as dt
 import json
+import threading
 
+import httpx
 import polars as pl
 
-from ..core.client import KalshiClient
+from ..core.client import KalshiClient, SharedRateGate
 from ..core.parse import cents, quantity
+from ..core.parquet import read_shards
 
-from ..core.paths import CHECKPOINTS, MARKETS, TRADES as TRADES_DIR
+from ..core.paths import CHECKPOINTS, MARKETS, SERIES, TRADES as TRADES_DIR
+from ..core.tiers import apply_current_tiers
 
 CHECKPOINT = CHECKPOINTS / "trades_done.json"
 FLUSH_ROWS = 500_000
+CHECKPOINT_MARKETS = 500
+_thread_state = threading.local()
+_shared_rate_gate: SharedRateGate | None = None
 
 CUTOFF = dt.datetime(2026, 5, 16, tzinfo=dt.timezone.utc)  # outage fallback only
 MIN_LIFETIME_DAYS = 0.0
@@ -105,9 +113,8 @@ def _as_datetime(df: pl.DataFrame, name: str) -> pl.Expr:
 
 
 def eligible_markets(tier: str, min_lifetime_days: float = MIN_LIFETIME_DAYS) -> pl.DataFrame:
-    return eligible_markets_from_frame(
-        pl.read_parquet(MARKETS / "*.parquet"), tier, min_lifetime_days
-    )
+    markets = apply_current_tiers(read_shards(MARKETS), pl.read_parquet(SERIES))
+    return eligible_markets_from_frame(markets, tier, min_lifetime_days)
 
 
 def _load_checkpoint() -> dict:
@@ -116,9 +123,75 @@ def _load_checkpoint() -> dict:
     return {"done": [], "part": 0}
 
 
-def run(tier: str, rps: float = 6.0, min_lifetime_days: float = MIN_LIFETIME_DAYS) -> None:
+def _save_checkpoint(state: dict) -> None:
+    CHECKPOINT.parent.mkdir(parents=True, exist_ok=True)
+    CHECKPOINT.write_text(json.dumps(state))
+
+
+def _flush(rows: list[dict], state: dict) -> None:
+    if not rows:
+        return
+    TRADES_DIR.mkdir(parents=True, exist_ok=True)
+    df = pl.DataFrame(rows, infer_schema_length=None).unique(subset="trade_id")
+    path = TRADES_DIR / f"part-{state['part']:04d}.parquet"
+    df.write_parquet(path)
+    state["part"] += 1
+    print(f"flushed {len(df):,} trades -> {path.name}", flush=True)
+
+
+def _fetch_worker(
+    task: tuple[dict, dt.datetime, float],
+) -> tuple[str, list[dict], str | None]:
+    market, cutoff, per_worker_rps = task
+    client = getattr(_thread_state, "client", None)
+    if client is None:
+        client = KalshiClient(rps=per_worker_rps, rate_gate=_shared_rate_gate)
+        _thread_state.client = client
+    try:
+        rows = fetch_market_trades(
+            client,
+            market["ticker"],
+            market["open_time"],
+            market["end_time"],
+            trade_cutoff=cutoff,
+        )
+    except httpx.HTTPStatusError as exc:
+        if exc.response.status_code != 404:
+            raise
+        return market["ticker"], [], f"404 {exc.request.url}"
+    return market["ticker"], rows, None
+
+
+def _bounded_results(tasks, workers: int):
+    """Yield worker results with bounded futures on every supported Python version."""
+    iterator = iter(tasks)
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        pending = set()
+        for _ in range(workers * 4):
+            try:
+                pending.add(pool.submit(_fetch_worker, next(iterator)))
+            except StopIteration:
+                break
+        while pending:
+            completed, pending = wait(pending, return_when=FIRST_COMPLETED)
+            for future in completed:
+                yield future.result()
+                try:
+                    pending.add(pool.submit(_fetch_worker, next(iterator)))
+                except StopIteration:
+                    pass
+
+
+def run(
+    tier: str,
+    rps: float = 6.0,
+    min_lifetime_days: float = MIN_LIFETIME_DAYS,
+    workers: int = 8,
+) -> None:
+    global _shared_rate_gate
+    _shared_rate_gate = SharedRateGate(rps)
     markets = eligible_markets(tier, min_lifetime_days)
-    client = KalshiClient(rps=rps)
+    client = KalshiClient(rps=rps, rate_gate=_shared_rate_gate)
     cutoff = trade_cutoff(client)
     state = _load_checkpoint()
     done = set(state["done"])
@@ -126,34 +199,27 @@ def run(tier: str, rps: float = 6.0, min_lifetime_days: float = MIN_LIFETIME_DAY
     print(f"tier={tier}: {len(todo):,} markets need trades ({len(done):,} done)", flush=True)
 
     pending: list[dict] = []
-    for i, m in enumerate(todo):
-        pending.extend(
-            fetch_market_trades(
-                client, m["ticker"], m["open_time"], m["end_time"], trade_cutoff=cutoff
-            )
-        )
-        state["done"].append(m["ticker"])
-        if len(pending) >= FLUSH_ROWS:
-            TRADES_DIR.mkdir(parents=True, exist_ok=True)
-            df = pl.DataFrame(pending, infer_schema_length=None).unique(subset="trade_id")
-            path = TRADES_DIR / f"part-{state['part']:04d}.parquet"
-            df.write_parquet(path)
-            state["part"] += 1
-            CHECKPOINT.parent.mkdir(parents=True, exist_ok=True)
-            CHECKPOINT.write_text(json.dumps(state))
-            print(f"flushed {len(df):,} trades -> {path.name}", flush=True)
+    per_worker_rps = max(rps / workers, 0.25)
+    tasks = ((market, cutoff, per_worker_rps) for market in todo)
+    for i, (ticker, rows, unavailable) in enumerate(
+        _bounded_results(tasks, workers), start=1
+    ):
+        pending.extend(rows)
+        if unavailable:
+            state.setdefault("unavailable", {})[ticker] = unavailable
+            print(f"  unavailable: {ticker}: {unavailable}", flush=True)
+        else:
+            state["done"].append(ticker)
+            state.setdefault("unavailable", {}).pop(ticker, None)
+        if len(pending) >= FLUSH_ROWS or i % CHECKPOINT_MARKETS == 0:
+            _flush(pending, state)
+            _save_checkpoint(state)
             pending = []
-        if (i + 1) % 500 == 0:
-            print(f"  {i + 1:,}/{len(todo):,} markets, {len(pending):,} trades pending", flush=True)
+        if i % CHECKPOINT_MARKETS == 0:
+            print(f"  {i:,}/{len(todo):,} markets attempted", flush=True)
 
-    if pending:
-        TRADES_DIR.mkdir(parents=True, exist_ok=True)
-        df = pl.DataFrame(pending, infer_schema_length=None).unique(subset="trade_id")
-        path = TRADES_DIR / f"part-{state['part']:04d}.parquet"
-        df.write_parquet(path)
-        state["part"] += 1
-    CHECKPOINT.parent.mkdir(parents=True, exist_ok=True)
-    CHECKPOINT.write_text(json.dumps(state))
+    _flush(pending, state)
+    _save_checkpoint(state)
     print(f"tier={tier}: trades complete", flush=True)
 
 
@@ -161,6 +227,12 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--tier", required=True, choices=["deployment", "instrumentation"])
     ap.add_argument("--rps", type=float, default=6.0)
+    ap.add_argument("--workers", type=int, default=8)
     ap.add_argument("--min-lifetime-days", type=float, default=MIN_LIFETIME_DAYS)
     args = ap.parse_args()
-    run(tier=args.tier, rps=args.rps, min_lifetime_days=args.min_lifetime_days)
+    run(
+        tier=args.tier,
+        rps=args.rps,
+        min_lifetime_days=args.min_lifetime_days,
+        workers=args.workers,
+    )
