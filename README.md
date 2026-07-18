@@ -15,7 +15,7 @@ deployment decisions belong to the operator.
 | Path | Contents |
 |---|---|
 | `market-structure.md` | **The findings book — document of record.** Read first; wins all conflicts. |
-| `docs/plans/` | Work plans: 01 market-structure (completed), 02 edge-program (active) |
+| `docs/plans/` | Work plans: 01 market-structure (completed), 02 edge-program (completed), **03 information-edge (active)** |
 | `docs/phase0-assumptions.md` | Pre-committed rules + amendment log |
 | `docs/data-set-description.md` | Data census, scope, backfillable vs capture-only |
 | `docs/memos/` | Per-cell deployment memos (tail-risk math first) |
