@@ -24,12 +24,13 @@ def _markets(result="yes", fee_type="quadratic"):
     )
 
 
-def _trade(taker_side, p, days_before=40):
+def _trade(taker_side, p, days_before=40, count=1.0):
     return {
         "ticker": "M1",
         "created_time": END - dt.timedelta(days=days_before),
         "yes_price_cents": p,
         "taker_side": taker_side,
+        "count": count,
     }
 
 
@@ -66,6 +67,7 @@ def test_horizon_and_price_buckets():
     row = df.row(0, named=True)
     assert row["hbucket"] == "c 30-90d"
     assert row["bucket"] == "10-20"
+    assert row["count"] == 1.0
 
 
 def test_cell_stats_matches_scalar_cluster_se():

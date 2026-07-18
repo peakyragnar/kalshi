@@ -48,7 +48,8 @@ be reconstructed.
 
 ## Registry and atlas
 
-`research/hypotheses.yaml` is deterministic JSON-compatible YAML. Every screen
+`research/hypotheses.yaml` and `research/mechanism-suite-v1.yaml` are deterministic
+JSON-compatible YAML. Every screen
 declares mechanism, universe, signal, entry, exit, fees, spread, carry,
 benchmark, clustering, temporal validation, capacity, tail risk, exact filters,
 economic hurdle, minimum independent events, error multiplier, status, and
@@ -68,13 +69,21 @@ Benjamini–Hochberg false-discovery correction across the registered search.
 Historical qualification permits shadow research only; deployment still needs
 forward evidence, live execution, a findings-book entry, and operator approval.
 
-Atlas v1 executes only the predeclared category × close-horizon × price grid
-and two legacy cells. Listing-age effects, recurring-series residuals, ladder
-monotonicity, linked-contract lead/lag, activity/staleness/flow interactions,
-and resolution objectivity are registered as **untested**. Some can use the
-current panel; ladders, linked semantics, and rule objectivity require historical
-metadata not retained in the raw store. The atlas report lists these gaps so an
-untested mechanism cannot be read as a RED result.
+The multi-mechanism suite executes the close-price grid plus listing lifecycle,
+own-price path, sibling-contract lead/lag, aggressor flow, activity, staleness,
+recurring-series, calendar, early-close, event structure, settlement-source,
+fill-conditioned maker selection, and rule-objectivity families. Conditional
+families must beat a matched category × decision-label × price × side baseline,
+not merely inherit a pooled low-price effect. Unsupported registered cells enter
+false-discovery correction with p=1, so tiny zero-variance cells cannot improve a
+supported candidate's rank.
+
+Historical market metadata is backfilled per series into
+`data/raw/market_metadata/`. It supplies actual settlement timestamps, titles,
+choice labels, numeric strikes, and rule text. Ladder monotonicity and mutually
+exclusive event sums are explicitly reported as asynchronous calibration
+comparisons: all legs still need simultaneous live book prices before either can
+be called executable.
 
 ## External feature contract
 
@@ -94,9 +103,13 @@ an empty exact-name search `NO_MATCH`, not `CLEAR`.
 
 ```bash
 uv run python -m kalshi_data.ingest.trades --tier deployment --min-lifetime-days 0
+uv run python -m kalshi_data.ingest.market_metadata --tier deployment
 uv run python -m kalshi_data.analysis.corpus_audit
 uv run python -m kalshi_data.analysis.research_panel
 uv run python -m kalshi_data.analysis.atlas
+uv run python -m kalshi_data.analysis.mechanism_suite
+uv run python -m kalshi_data.analysis.metadata_suite
+uv run python -m kalshi_data.analysis.survivor_audit
 uv run python -m kalshi_data.features.edgar
 ```
 

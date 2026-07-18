@@ -7,11 +7,13 @@ evidence lands (forward settlements, recorder depth, live scans). This document
 records what the data supports — the deployment decision itself belongs to the
 operator and is gated by the Phase 3 map and the pre-committed kill rule.
 
-**Data basis (as of 2026-07-17):** 2.733M settled deployment-tier markets (2021→2026),
-47.342M fills with aggressor side, 50,941 correctly close-anchored snapshots,
-758,479 leakage-resistant decision points, and order-book depth
-recorder live since 2026-07-15. Full reports: `research/screen_a.md`, `screen_d.md`,
-`screen_b.md`, `corpus-audit.md`, and `edge-atlas.md`.
+**Data basis (as of 2026-07-18):** 2.733M settled deployment-tier markets (2021→2026),
+47.342M fills with aggressor side, 758,479 leakage-resistant decision points,
+complete canonical title/strike/rule metadata, actual settlement timestamps for
+2,732,848 of 2,732,916 outcome rows, and order-book depth recorder live since
+2026-07-15. Full reports: `research/screen_a.md`, `screen_d.md`, `screen_b.md`,
+`corpus-audit.md`, `edge-atlas.md`, `mechanism-suite.md`, `metadata-suite.md`,
+and `survivor-audit.md`.
 
 **Material timing correction, 2026-07-17.** Earlier screens anchored horizons to
 `max(close_time, expiration_time)`. Kalshi uses `close_time` for the actual end
@@ -40,13 +42,15 @@ FDR-qualified cell. Neither side is a universal rule; temporal replication and
 search correction are mandatory. *(Corrected Screen A; Edge atlas v1)*
 
 ### F3. The bias has large sign flips — selection is mandatory
-The systematic atlas tested 722 pre-registered category × horizon × price cells.
-Only Economics T−30d YES 11–20¢ passed all three folds before multiple-testing
-correction, and it failed the FDR gate (q=0.110). This is direct evidence that
-isolated high-return cells are easy to manufacture from the corpus. No new cell
-is promoted. This verdict applies to the executed grid, not the explicitly
-untested listing-age, recurring-series, ladder, lead/lag, conditional-flow, or
-rule-objectivity hypotheses. *(Edge atlas v1)*
+The original atlas tested 722 category × horizon × price cells and produced zero
+FDR qualifiers. The expanded suite now executes the previously missing
+mechanisms: listing lifecycle, own-price path, sibling lead/lag, aggressor flow,
+recent activity, staleness, recurring series, calendar, early close, event
+structure, settlement source, maker selection, and rule language. Across 36,472
+statistical cells, seven passed all three folds, two survived family FDR, and one
+survived suite-wide FDR. This is direct evidence that isolated high-return cells
+are easy to manufacture from the corpus and must be judged against the entire
+search. *(Edge atlas v1; Multi-mechanism suite v1)*
 
 ### F4. Makers beat takers everywhere — but that alone does not make maker returns positive
 Across 20.1M eligible fills, the resting side out-returns the crossing side in every
@@ -95,6 +99,23 @@ free. APY (3.25%, variable) accrues on cash AND open positions
 ~51bps. **Open question: does cash escrowed behind unfilled resting orders
 accrue?** (Assume no until Kalshi confirms — prices the cost of waiting for fills.)
 
+### F10. One non-term mechanism survives: a near-flat last-day path on the NO maker side
+The only suite-wide survivor is `T-1d->T-6h|-2:2|01-05|no`: at T−6h the YES
+price is 1–5¢ and changed by at least −2¢ but less than +2¢ since T−1d, after a
+new trade in that interval. It contains 21,812 decisions and at least 1,079
+independent events per fold; family q=0.000096 and suite q=0.012157. Its weakest
+absolute annualized two-standard-error lower bound is 401%, but the weakest
+matched-baseline uplift lower bound is only 0.97% annualized, so the incremental
+margin is real under the registered test but thin in the early fold.
+
+Execution role is decisive. Historical prints where the desired NO side was the
+maker earned mean hold returns of 1.47%, 1.25%, and 1.04% in the early, middle,
+and recent folds; the corresponding taker-NO lower bounds were negative in all
+three. The candidate is therefore **maker-only and shadow-only**. Climate and
+Weather supplied 63.9% of matched maker contracts, which prioritizes a
+point-in-time NOAA forecast test but does not create a separately qualified
+weather edge. *(Multi-mechanism suite v1; Survivor execution audit)*
+
 ---
 
 ## Part 2 — Current deployment interpretation (not an automatic instruction)
@@ -116,7 +137,9 @@ After the timing correction, the evidence supports only this narrow posture:
 - **Financials T−90:** withdrawn as a qualified cell after the timing correction;
   no new entry should be inferred from the old memo. Existing orders/positions
   require an operator decision and were not changed by research code.
-- **New discovery:** none. The 722-cell atlas produced zero FDR-qualified cells.
+- **New discovery:** one historically qualified shadow candidate: near-flat
+  T−1d→T−6h path, 1–5¢ YES, resting NO maker only. It is not authorized for live
+  orders and does not alter the legacy deployment rules.
 
 **What would falsify it going forward:** the calibration gap closing in newly
 settled markets; maker-taker gap compressing (professionalizing flow); fill
@@ -132,8 +155,10 @@ rates collapsing. All three are tracked automatically (below).
    systematic qualification.
 2. **Financials T−90d YES 1–10¢ ex-ticket:** middle-fold lower bound is −13.1%
    and the corrected legacy map also fails. Status: **RED / qualification withdrawn**.
-3. **Systematic atlas:** one pre-FDR survivor (Economics T−30d YES 11–20¢),
-   rejected at q=0.110. Status: **zero new edges**.
+3. **Complete mechanism suite:** 36,472 cells across 15 executable families;
+   one path cell survives suite FDR at q=0.012157. Status: **HISTORICALLY
+   QUALIFIED / SHADOW ONLY** because historical books cannot establish fill
+   probability or available depth.
 4. **Forward validation:** observations from 2026-07-17 onward are sealed and
    cannot be reused to invent gates.
 5. **Execution:** historical books remain unavailable; only captured books and
@@ -152,6 +177,8 @@ rates collapsing. All three are tracked automatically (below).
 | Screen | Verdict | Evidence | Consequence |
 |---|---|---|---|
 | Structural atlas v1 (`research/edge-atlas.md`) | **ZERO QUALIFIERS** | 722 registered cells; one passed all folds pre-FDR (Economics T−30d YES 11–20¢), then failed q=0.110. | No new cell; begin external-data work only as a selection layer or newly registered test. |
+| Multi-mechanism suite v1 (`research/mechanism-suite.md`) | **ONE HISTORICAL QUALIFIER** | 36,472 cells across 15 executable families; seven three-fold passes, two family-FDR passes, one suite-FDR pass. | Shadow the near-flat T−1d→T−6h 1–5¢ YES / maker-NO path; do not deploy from historical tape alone. |
+| Metadata structure (`research/metadata-suite.md`) | **DESCRIPTIVE ONLY** | 36,416 adjacent ladder pairs and 125 complete exclusive-event observations; synchronous-price coverage is sparse. | Use live books to test simultaneous leg execution; do not label asynchronous last-print gaps arbitrage. |
 | Flow-shock overshoot (`research/flow_shock.md`) | **RED** | Corrected timing: 3,217 shocks, median seven-day YES change −3¢ in both periods. Discovery reversion, absolute return, and uplift all fail the 2SE gate. | Do not add a pooled post-shock entry rule. |
 
 ## Change log
@@ -201,3 +228,10 @@ rates collapsing. All three are tracked automatically (below).
   folds with event clustering and FDR. Zero qualified. Politics T−30 retains
   strong economics but lacks early-fold support; Financials T−90 is RED and its
   prior qualification is withdrawn. No live order was changed automatically.
+- 2026-07-18: Completed the registered multi-mechanism suite over the full
+  corpus and historical metadata. Of 36,472 statistical cells, one near-flat
+  last-day price-path / maker-NO cell survived all economic, support, matched
+  baseline, family-FDR, and suite-FDR gates. Execution reconstruction confirms
+  maker-side positive fold evidence and rejects crossing as robust; status is
+  shadow-only pending forward books/fills. Ladder and event-sum scans remain
+  descriptive because historical last prints are asynchronous.

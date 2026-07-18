@@ -12,7 +12,7 @@ import datetime as dt
 
 import polars as pl
 
-from ..core.paths import DECISION_POINTS, MARKET_RELATIONS, MARKETS, OUTCOMES, TRADES
+from ..core.paths import DECISION_POINTS, MARKET_METADATA, MARKET_RELATIONS, MARKETS, OUTCOMES, TRADES
 
 
 @dataclass(frozen=True)
@@ -167,6 +167,20 @@ def build_outcomes(markets: pl.DataFrame) -> pl.DataFrame:
     ).sort("ticker")
 
 
+def enrich_outcomes_with_metadata(outcomes: pl.DataFrame, metadata: pl.DataFrame) -> pl.DataFrame:
+    """Fill missing resolution timestamps from the dedicated market backfill."""
+    repaired = metadata.select(
+        "ticker",
+        pl.col("settled_time").cast(pl.String).str.to_datetime(time_zone="UTC", strict=False)
+        .alias("metadata_resolution_time"),
+    ).unique("ticker", keep="first")
+    return outcomes.join(repaired, on="ticker", how="left").with_columns(
+        pl.coalesce("resolution_time", "metadata_resolution_time").alias("resolution_time"),
+        (pl.col("resolution_time_trustworthy") | pl.col("metadata_resolution_time").is_not_null())
+        .alias("resolution_time_trustworthy"),
+    ).drop("metadata_resolution_time").sort("ticker")
+
+
 def build_market_relations(markets: pl.DataFrame) -> pl.DataFrame:
     return markets.with_columns(pl.col("volume").fill_null(0.0)).with_columns(
         pl.len().over("event_ticker").alias("event_group_size"),
@@ -189,6 +203,10 @@ def run() -> None:
     traded_markets = markets.join(trades.select("ticker").unique(), on="ticker", how="inner")
     points = build_decision_points(traded_markets, trades)
     outcomes = build_outcomes(markets)
+    if MARKET_METADATA.exists() and any(MARKET_METADATA.glob("*.parquet")):
+        outcomes = enrich_outcomes_with_metadata(
+            outcomes, pl.read_parquet(MARKET_METADATA / "*.parquet")
+        )
     relations = build_market_relations(markets)
     DECISION_POINTS.parent.mkdir(parents=True, exist_ok=True)
     points.write_parquet(DECISION_POINTS)

@@ -7,6 +7,7 @@ from kalshi_data.analysis.research_panel import (
     build_decision_points,
     build_market_relations,
     build_outcomes,
+    enrich_outcomes_with_metadata,
 )
 
 
@@ -103,6 +104,14 @@ def test_outcomes_are_separate_and_preserve_resolution_quality():
     assert row["resolution_time"] is None
     assert row["resolution_time_trustworthy"] is False
     assert "yes_price_cents" not in out.columns
+
+
+def test_metadata_settlement_timestamp_repairs_missing_resolution_time():
+    outcomes = build_outcomes(pl.DataFrame([_market(settled_time=None, can_close_early=True)]))
+    metadata = pl.DataFrame({"ticker": ["M1"], "settled_time": ["2026-01-15T12:00:00Z"]})
+    row = enrich_outcomes_with_metadata(outcomes, metadata).row(0, named=True)
+    assert row["resolution_time"] == dt.datetime(2026, 1, 15, 12, tzinfo=UTC)
+    assert row["resolution_time_trustworthy"] is True
 
 
 def test_relations_are_memberships_not_quadratic_pairs():

@@ -1,4 +1,11 @@
-from kalshi_data.ingest.market_metadata import fetch_series_metadata, metadata_row
+import polars as pl
+
+from kalshi_data.ingest.market_metadata import (
+    fetch_market_metadata,
+    fetch_series_metadata,
+    metadata_row,
+    normalize_metadata_frame,
+)
 
 
 def test_metadata_row_preserves_ladder_and_rule_fields():
@@ -28,3 +35,27 @@ def test_fetch_series_metadata_combines_historical_and_live_without_duplicates()
     )
     assert len(rows) == 1
     assert rows[0]["ticker"] == "M"
+
+
+def test_ticker_repair_falls_back_between_live_and_historical_endpoints():
+    class Client:
+        def get(self, path):
+            if path.startswith("/markets/"):
+                raise RuntimeError("not live")
+            return {"market": {"ticker": "M", "event_ticker": "E", "title": "Recovered"}}
+
+    row = fetch_market_metadata(
+        Client(), "M", {"ticker": "S", "category": "Economics", "tier": "deployment"}
+    )
+    assert row["ticker"] == "M"
+    assert row["title"] == "Recovered"
+
+
+def test_metadata_shards_normalize_integer_strikes_to_float_schema():
+    row = metadata_row(
+        {"ticker": "M", "floor_strike": 1, "cap_strike": 2},
+        {"ticker": "S", "category": "Economics", "tier": "deployment"},
+    )
+    frame = normalize_metadata_frame([row])
+    assert frame.schema["floor_strike"] == pl.Float64
+    assert frame.schema["cap_strike"] == pl.Float64

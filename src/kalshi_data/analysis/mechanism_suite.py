@@ -27,6 +27,12 @@ from ..core.paths import (
 CARRY_APY = 0.0325
 FOLDS = ("early", "middle", "recent")
 PRICE_BUCKETS = ((1, 5), (6, 10), (11, 20), (21, 40), (41, 60), (61, 80), (81, 95), (96, 99))
+CONDITIONAL_FAMILIES = {
+    "price-path-dependence", "aggressor-imbalance", "recent-activity",
+    "price-staleness", "recurring-series-residual", "calendar-month",
+    "calendar-weekday", "early-close-risk", "event-structure", "settlement-source",
+    "sibling-lead-lag",
+}
 
 
 def load_suite_registry(path: Path) -> dict:
@@ -94,17 +100,34 @@ def build_path_rows(points: pl.DataFrame, pairs: list[tuple[str, str]]) -> pl.Da
         prior = points.filter(pl.col("decision_label") == earlier_label).select(
             "ticker",
             pl.col("decision_time").alias("prior_decision_time"),
+            pl.col("trade_time").alias("prior_trade_time"),
             pl.col("yes_price_cents").alias("prior_yes_price_cents"),
         )
         later = points.filter(pl.col("decision_label") == later_label)
         paired = later.join(prior, on="ticker", how="inner").filter(
-            pl.col("prior_decision_time") < pl.col("decision_time")
+            (pl.col("prior_decision_time") < pl.col("decision_time"))
+            & (pl.col("trade_time") > pl.col("prior_decision_time"))
         ).with_columns(
             (pl.col("yes_price_cents") - pl.col("prior_yes_price_cents")).alias("price_move_cents"),
             pl.lit(f"{earlier_label}->{later_label}").alias("path_pair"),
         )
         frames.append(paired)
     return pl.concat(frames, how="diagonal_relaxed") if frames else points.head(0)
+
+
+def build_sibling_rows(points: pl.DataFrame, pairs: list[tuple[str, str]]) -> pl.DataFrame:
+    """Attach the mean price move of other contracts in the same event."""
+    paths = build_path_rows(points, pairs)
+    groups = ["event_ticker", "path_pair", "decision_time"]
+    return paths.with_columns(
+        pl.col("price_move_cents").sum().over(groups).alias("event_move_sum"),
+        pl.len().over(groups).alias("event_move_count"),
+    ).filter(pl.col("event_move_count") > 1).with_columns(
+        (
+            (pl.col("event_move_sum") - pl.col("price_move_cents"))
+            / (pl.col("event_move_count") - 1)
+        ).alias("sibling_move_cents")
+    )
 
 
 def _p_value(mean: float, se: float, hurdle: float) -> float:
@@ -115,8 +138,19 @@ def _p_value(mean: float, se: float, hurdle: float) -> float:
     return 0.5 * math.erfc(((mean - hurdle) / se) / math.sqrt(2))
 
 
+def residualize_against_baseline(frame: pl.DataFrame, match_columns: list[str]) -> pl.DataFrame:
+    """Subtract a matched base return so a condition must add information."""
+    baseline = frame.group_by(match_columns).agg(
+        pl.col("annualized_net_return").mean().alias("matched_baseline_return")
+    )
+    return frame.join(baseline, on=match_columns, how="left").with_columns(
+        (pl.col("annualized_net_return") - pl.col("matched_baseline_return")).alias("incremental_return")
+    )
+
+
 def evaluate_cells(
-    frame: pl.DataFrame, minimum_events: int, hurdle: float, z: float
+    frame: pl.DataFrame, minimum_events: int, hurdle: float, z: float,
+    require_incremental: bool = False,
 ) -> tuple[pl.DataFrame, pl.DataFrame]:
     required = {"family_id", "cell_id", "period", "event_ticker", "annualized_net_return"}
     missing = required - set(frame.columns)
@@ -129,20 +163,49 @@ def evaluate_cells(
     ).rename({
         "annualized_net_return_mean": "mean_ann_net",
         "annualized_net_return_se": "cluster_se",
-    }).with_columns(
+    })
+    if require_incremental:
+        if "incremental_return" not in frame.columns:
+            raise ValueError("conditional cell frame missing incremental_return")
+        incremental = cell_stats(
+            frame.filter(pl.col("period").is_in(FOLDS)),
+            ["family_id", "cell_id", "period"],
+            "incremental_return",
+        ).select(
+            "family_id", "cell_id", "period",
+            pl.col("incremental_return_mean").alias("mean_incremental"),
+            pl.col("incremental_return_se").alias("incremental_se"),
+        )
+        stats = stats.join(
+            incremental, on=["family_id", "cell_id", "period"], how="inner"
+        ).with_columns(
+            (pl.col("mean_incremental") - z * pl.col("incremental_se")).alias("incremental_lower_bound")
+        )
+    else:
+        stats = stats.with_columns(
+            pl.lit(None).cast(pl.Float64).alias("mean_incremental"),
+            pl.lit(None).cast(pl.Float64).alias("incremental_se"),
+            pl.lit(None).cast(pl.Float64).alias("incremental_lower_bound"),
+        )
+    stats = stats.with_columns(
         (pl.col("mean_ann_net") - z * pl.col("cluster_se")).alias("lower_bound")
     ).with_columns(
         pl.struct("mean_ann_net", "cluster_se").map_elements(
             lambda row: _p_value(row["mean_ann_net"], row["cluster_se"], hurdle),
             return_dtype=pl.Float64,
         ).alias("p_value"),
-        ((pl.col("n_events") >= minimum_events) & (pl.col("lower_bound") > hurdle)).alias("period_pass"),
+        (
+            (pl.col("n_events") >= minimum_events)
+            & (pl.col("lower_bound") > hurdle)
+            & ((pl.col("incremental_lower_bound") > 0) if require_incremental else pl.lit(True))
+        ).alias("period_pass"),
     )
     cells = stats.group_by("family_id", "cell_id").agg(
         pl.col("period").n_unique().alias("n_periods"),
         pl.col("period_pass").all().alias("all_observed_periods_pass"),
         pl.col("p_value").max().alias("worst_period_p"),
         pl.col("lower_bound").min().alias("worst_lower_bound"),
+        pl.col("incremental_lower_bound").min().alias("worst_incremental_lower_bound"),
         pl.col("n_events").min().alias("minimum_fold_events"),
         pl.col("n").sum().alias("n_total"),
     ).with_columns(
@@ -179,17 +242,37 @@ def _fixed_bin(column: str, bins: list[list[float]], name: str) -> pl.Expr:
 
 
 def _cellize(frame: pl.DataFrame, family_id: str, dimensions: list[str]) -> pl.DataFrame:
+    columns = ["family_id", "cell_id", "period", "event_ticker", "annualized_net_return"]
+    if "incremental_return" in frame.columns:
+        columns.append("incremental_return")
     return frame.with_columns(
         pl.lit(family_id).alias("family_id"),
         pl.concat_str([pl.col(column).cast(pl.String) for column in dimensions], separator="|").alias("cell_id"),
-    ).select("family_id", "cell_id", "period", "event_ticker", "annualized_net_return")
+    ).select(columns)
+
+
+def _conditional_cellize(
+    frame: pl.DataFrame, family_id: str, dimensions: list[str]
+) -> pl.DataFrame:
+    enriched = add_side_economics(frame)
+    matched = residualize_against_baseline(
+        enriched, ["period", "category", "decision_label", "price_bucket", "side"]
+    )
+    return _cellize(matched, family_id, dimensions)
 
 
 def _base_panel() -> pl.DataFrame:
     points = pl.read_parquet(DECISION_POINTS)
-    outcomes = pl.read_parquet(OUTCOMES).select("ticker", "result_yes")
+    outcomes = pl.read_parquet(OUTCOMES).select(
+        "ticker", "result_yes", "resolution_time", "resolution_time_trustworthy"
+    )
     return add_periods(points.join(outcomes, on="ticker", how="inner")).with_columns(
-        pl.col("scheduled_hold_seconds").alias("hold_seconds"),
+        pl.when(
+            pl.col("resolution_time_trustworthy")
+            & (pl.col("resolution_time") > pl.col("decision_time"))
+        ).then(
+            (pl.col("resolution_time") - pl.col("decision_time")).dt.total_seconds()
+        ).otherwise(pl.col("scheduled_hold_seconds")).alias("hold_seconds"),
         _price_bucket_expr(),
     ).filter(
         pl.col("decision_time_trustworthy")
@@ -227,9 +310,20 @@ def build_registered_family_frames(base: pl.DataFrame, registry: dict) -> dict[s
     paths = build_path_rows(base, [tuple(pair) for pair in path_spec["label_pairs"]]).with_columns(
         _fixed_bin("price_move_cents", path_spec["move_bins_cents"], "move_bin")
     ).filter(pl.col("move_bin") != "out")
-    frames["price-path-dependence"] = _cellize(
-        add_side_economics(paths), "price-path-dependence",
+    frames["price-path-dependence"] = _conditional_cellize(
+        paths, "price-path-dependence",
         ["path_pair", "move_bin", "price_bucket", "side"],
+    )
+
+    sibling_spec = specs["sibling-lead-lag"]["dimensions"]
+    siblings = build_sibling_rows(
+        base, [tuple(pair) for pair in sibling_spec["label_pairs"]]
+    ).with_columns(
+        _fixed_bin("sibling_move_cents", sibling_spec["sibling_move_bins_cents"], "sibling_move_bin")
+    ).filter(pl.col("sibling_move_bin") != "out")
+    frames["sibling-lead-lag"] = _conditional_cellize(
+        siblings, "sibling-lead-lag",
+        ["path_pair", "sibling_move_bin", "price_bucket", "side"],
     )
 
     flow_spec = specs["aggressor-imbalance"]["dimensions"]
@@ -238,8 +332,8 @@ def build_registered_family_frames(base: pl.DataFrame, registry: dict) -> dict[s
         & (pl.col("volume_24h") >= flow_spec["minimum_24h_volume"])
         & pl.col("yes_taker_share_24h").is_not_null()
     ).with_columns(_fixed_bin("yes_taker_share_24h", flow_spec["yes_taker_share_bins"], "flow_bin"))
-    frames["aggressor-imbalance"] = _cellize(
-        add_side_economics(flow), "aggressor-imbalance",
+    frames["aggressor-imbalance"] = _conditional_cellize(
+        flow, "aggressor-imbalance",
         ["decision_label", "flow_bin", "price_bucket", "side"],
     )
 
@@ -247,8 +341,8 @@ def build_registered_family_frames(base: pl.DataFrame, registry: dict) -> dict[s
     activity = base.filter(pl.col("decision_label").is_in(activity_spec["decision_labels"])).with_columns(
         _fixed_bin("volume_24h", activity_spec["volume_24h_bins"], "activity_bin")
     )
-    frames["recent-activity"] = _cellize(
-        add_side_economics(activity), "recent-activity",
+    frames["recent-activity"] = _conditional_cellize(
+        activity, "recent-activity",
         ["decision_label", "activity_bin", "price_bucket", "side"],
     )
 
@@ -258,15 +352,15 @@ def build_registered_family_frames(base: pl.DataFrame, registry: dict) -> dict[s
     ).with_columns(_fixed_bin("staleness_fraction", stale_spec["staleness_fraction_bins"], "staleness_bin")).filter(
         pl.col("staleness_bin") != "out"
     )
-    frames["price-staleness"] = _cellize(
-        add_side_economics(stale), "price-staleness",
+    frames["price-staleness"] = _conditional_cellize(
+        stale, "price-staleness",
         ["decision_label", "staleness_bin", "price_bucket", "side"],
     )
 
     series_spec = specs["recurring-series-residual"]["dimensions"]
     series = base.filter(pl.col("decision_label").is_in(series_spec["decision_labels"]))
-    frames["recurring-series-residual"] = _cellize(
-        add_side_economics(series), "recurring-series-residual",
+    frames["recurring-series-residual"] = _conditional_cellize(
+        series, "recurring-series-residual",
         ["series_ticker", "decision_label", "price_bucket", "side"],
     )
 
@@ -274,8 +368,8 @@ def build_registered_family_frames(base: pl.DataFrame, registry: dict) -> dict[s
     month = base.filter(pl.col("decision_label").is_in(month_spec["decision_labels"])).with_columns(
         pl.col("decision_time").dt.month().alias("calendar_value")
     )
-    frames["calendar-month"] = _cellize(
-        add_side_economics(month), "calendar-month",
+    frames["calendar-month"] = _conditional_cellize(
+        month, "calendar-month",
         ["decision_label", "calendar_value", "price_bucket", "side"],
     )
 
@@ -283,15 +377,15 @@ def build_registered_family_frames(base: pl.DataFrame, registry: dict) -> dict[s
     weekday = base.filter(pl.col("decision_label").is_in(weekday_spec["decision_labels"])).with_columns(
         pl.col("decision_time").dt.weekday().alias("calendar_value")
     )
-    frames["calendar-weekday"] = _cellize(
-        add_side_economics(weekday), "calendar-weekday",
+    frames["calendar-weekday"] = _conditional_cellize(
+        weekday, "calendar-weekday",
         ["decision_label", "calendar_value", "price_bucket", "side"],
     )
 
     early_spec = specs["early-close-risk"]["dimensions"]
     early = base.filter(pl.col("decision_label").is_in(early_spec["decision_labels"]))
-    frames["early-close-risk"] = _cellize(
-        add_side_economics(early), "early-close-risk",
+    frames["early-close-risk"] = _conditional_cellize(
+        early, "early-close-risk",
         ["decision_label", "can_close_early", "price_bucket", "side"],
     )
 
@@ -300,8 +394,8 @@ def build_registered_family_frames(base: pl.DataFrame, registry: dict) -> dict[s
     event = base.filter(pl.col("decision_label").is_in(event_spec["decision_labels"])).join(
         relations, on="ticker", how="inner"
     ).with_columns(_fixed_bin("event_group_size", event_spec["event_group_size_bins"], "event_size_bin"))
-    frames["event-structure"] = _cellize(
-        add_side_economics(event), "event-structure",
+    frames["event-structure"] = _conditional_cellize(
+        event, "event-structure",
         ["decision_label", "event_size_bin", "price_bucket", "side"],
     )
 
@@ -312,8 +406,8 @@ def build_registered_family_frames(base: pl.DataFrame, registry: dict) -> dict[s
     source = base.filter(pl.col("decision_label").is_in(source_spec["decision_labels"])).join(
         source_classes, on="series_ticker", how="left"
     ).with_columns(pl.col("source_class").fill_null("missing"))
-    frames["settlement-source"] = _cellize(
-        add_side_economics(source), "settlement-source",
+    frames["settlement-source"] = _conditional_cellize(
+        source, "settlement-source",
         ["decision_label", "source_class", "price_bucket", "side"],
     )
     return frames
@@ -323,22 +417,39 @@ def _maker_frame() -> pl.DataFrame:
     fills = add_periods(load_fills().rename({"created_time": "decision_time"})).with_columns(
         pl.when(pl.col("taker_side") == "yes").then(pl.lit("no")).otherwise(pl.lit("yes")).alias("maker_side"),
         (pl.col("ret_maker") * 365 / pl.col("horizon_days") + CARRY_APY).alias("annualized_net_return"),
+        _price_bucket_expr(),
     ).with_columns(
         pl.col("hbucket").str.replace("a ", "").str.replace("b ", "").str.replace("c ", "").str.replace("d ", "").str.replace("e ", "").alias("horizon_bin"),
         pl.lit("conditional-maker-selection").alias("family_id"),
     ).with_columns(
-        pl.concat_str("category", "horizon_bin", "bucket", "maker_side", separator="|").alias("cell_id")
+        pl.concat_str("category", "horizon_bin", "price_bucket", "maker_side", separator="|").alias("cell_id")
     )
     return fills.select("family_id", "cell_id", "period", "event_ticker", "annualized_net_return")
 
 
-def _apply_fdr(cells: pl.DataFrame) -> pl.DataFrame:
+def apply_search_correction(cells: pl.DataFrame, minimum_events: int) -> pl.DataFrame:
+    """Apply family and suite BH correction after enforcing fold support.
+
+    Unsupported cells remain in the registered search universe with p=1.  This
+    prevents tiny, zero-variance cells from improving the rank of supported
+    candidates while retaining the conservative penalty for having searched
+    them.
+    """
+    cells = cells.with_columns(
+        pl.when(
+            (pl.col("n_periods") == 3)
+            & (pl.col("minimum_fold_events") >= minimum_events)
+        )
+        .then(pl.col("worst_period_p"))
+        .otherwise(pl.lit(1.0))
+        .alias("search_p")
+    )
     pieces = []
     for _, family in cells.partition_by("family_id", as_dict=True).items():
-        q = false_discovery_adjust(family["worst_period_p"].to_list())
+        q = false_discovery_adjust(family["search_p"].to_list())
         pieces.append(family.with_columns(pl.Series("family_fdr_q", q)))
     out = pl.concat(pieces).sort("family_id", "cell_id")
-    global_q = false_discovery_adjust(out["worst_period_p"].to_list())
+    global_q = false_discovery_adjust(out["search_p"].to_list())
     return out.with_columns(pl.Series("suite_fdr_q", global_q)).with_columns(
         (
             pl.col("passes_all_folds")
@@ -376,17 +487,25 @@ def _markdown(registry: dict, cells: pl.DataFrame, periods: pl.DataFrame) -> str
             "passes_all_folds", "suite_fdr_q", "worst_lower_bound",
             descending=[True, False, True],
         ).head(5)
-        lines += [f"### {family_id}", "", "| cell | folds pass | min events | worst lower | family q | suite q |", "|---|---:|---:|---:|---:|---:|"]
+        lines += [
+            f"### {family_id}", "",
+            "| cell | folds pass | min events | worst lower | worst uplift lower | family q | suite q |",
+            "|---|---:|---:|---:|---:|---:|---:|",
+        ]
         for row in top.iter_rows(named=True):
             lines.append(
                 f"| {row['cell_id']} | {row['passes_all_folds']} | {row['minimum_fold_events']} | "
-                f"{row['worst_lower_bound']:.4f} | {row['family_fdr_q']:.6f} | {row['suite_fdr_q']:.6f} |"
+                f"{row['worst_lower_bound']:.4f} | "
+                f"{row['worst_incremental_lower_bound'] if row['worst_incremental_lower_bound'] is not None else ''} | "
+                f"{row['family_fdr_q']:.6f} | {row['suite_fdr_q']:.6f} |"
             )
         lines.append("")
     lines += [
         "## Metadata-dependent registered tests", "",
-        "Ladder monotonicity and rule-objectivity remain registered but are reported by the "
-        "metadata suite after historical titles, strikes, and rules are backfilled.", "",
+        "Rule objectivity, ladder monotonicity, and mutually exclusive event sums are reported by "
+        "`research/metadata-suite.md` after the historical metadata backfill. Rule cells join the "
+        "complete suite-wide correction; multi-leg structures remain descriptive until simultaneous "
+        "historical or live books exist.", "",
         f"Full machine-readable evidence: `{MECHANISM_RESULTS.relative_to(MECHANISM_RESULTS.parents[2])}` "
         f"and `{MECHANISM_PERIODS.relative_to(MECHANISM_PERIODS.parents[2])}`.",
     ]
@@ -406,6 +525,7 @@ def run() -> None:
             contract["minimum_events_per_fold"],
             contract["economic_hurdle"],
             contract["error_multiplier"],
+            require_incremental=family_id in CONDITIONAL_FAMILIES,
         )
         period_parts.append(periods)
         cell_parts.append(cells)
@@ -419,7 +539,10 @@ def run() -> None:
     period_parts.append(maker_periods)
     cell_parts.append(maker_cells)
     periods = pl.concat(period_parts, how="vertical_relaxed")
-    cells = _apply_fdr(pl.concat(cell_parts, how="vertical_relaxed"))
+    cells = apply_search_correction(
+        pl.concat(cell_parts, how="vertical_relaxed"),
+        contract["minimum_events_per_fold"],
+    )
     period_float_columns = [name for name, dtype in periods.schema.items() if dtype in (pl.Float32, pl.Float64)]
     cell_float_columns = [name for name, dtype in cells.schema.items() if dtype in (pl.Float32, pl.Float64)]
     periods = periods.with_columns(pl.col(period_float_columns).round(6))

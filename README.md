@@ -1,11 +1,14 @@
 # Kalshi Market Structure Project
 
 Research and operations for systematic Kalshi market-structure discovery.
-Corrected close-time anchoring and a registered 722-cell atlas leave **zero
-FDR-qualified historical cells**. The legacy Politics T−30d cell remains live
-monitored with insufficient early-fold support; Financials T−90d is withdrawn.
-Existing orders and positions are shown on the local dashboard, and research
-never changes them automatically. All deployment decisions belong to the operator.
+The complete registered structural suite tests **36,472 cells across 15
+executable mechanism families**. One price-path cell survives all three folds,
+economic and matched-baseline gates, and family- plus suite-wide FDR. It is a
+historically qualified shadow candidate, not a deployment instruction. The
+legacy Politics T−30d cell remains live monitored with insufficient early-fold
+support; Financials T−90d is withdrawn. Existing orders and positions are shown
+on the local dashboard, and research never changes them automatically. All
+deployment decisions belong to the operator.
 
 ## Repository map
 
@@ -23,6 +26,8 @@ never changes them automatically. All deployment decisions belong to the operato
 | `src/kalshi_data/analysis/` | screens, derived table, map, edge health |
 | `docs/research-system.md` | canonical panel, registry, atlas, validation and as-of feature contract |
 | `research/hypotheses.yaml` | pre-registered structural search space and gates |
+| `research/mechanism-suite-v1.yaml` | registered multi-mechanism search contract |
+| `research/systematic-alpha-results.md` | concise suite funnel, survivor, execution evidence, and rejected mechanisms |
 | `src/kalshi_data/operations/` | candidate list, shadow book, dashboard |
 | `src/kalshi_data/watchers/` | external-data tail watchers (congressional calendar) |
 | `src/kalshi_data/features/` | point-in-time external feature store and EDGAR adapter |
@@ -51,12 +56,14 @@ uv run python -m kalshi_data.analysis.phase3_map     # re-run the go/no-go map
 uv run python -m kalshi_data.analysis.corpus_audit   # coverage and timing-integrity audit
 uv run python -m kalshi_data.analysis.research_panel # decision points, outcomes, relationships
 uv run python -m kalshi_data.analysis.atlas          # registered structural search + FDR gate
+uv run python -m kalshi_data.ingest.market_metadata  # titles, strikes, rules, actual settlement
+uv run python -m kalshi_data.analysis.full_suite     # rebuild every structural research artifact
 uv run python -m kalshi_data.features.edgar          # SEC registration observations for IPO candidates
 ```
 
 Full rebuild from nothing: `ingest.series` → `ingest.markets --tier deployment`
 → `ingest.trades --tier deployment --min-lifetime-days 0` → `analysis.derive`
-→ `analysis.corpus_audit` → `analysis.research_panel` → `analysis.atlas`.
+→ `ingest.market_metadata` → `analysis.full_suite`.
 Checkpointed and resumable. Sports, parlays, and crypto remain outside this build.
 
 ## Automation (launchd)
@@ -65,14 +72,15 @@ Checkpointed and resumable. Sports, parlays, and crypto remain outside this buil
 |---|---|---|
 | `com.exascale.kalshi-recorder` | 06:10 / 12:10 / 18:10 / 23:50 | book depth snapshots |
 | `com.exascale.kalshi-daily` | 13:15 | incremental ingest → candidates → Senate/EDGAR observations → shadow/portfolio → dashboard |
-| `com.exascale.kalshi-weekly` | Mon 14:00 | corpus audit → panel → atlas → legacy edge health → dashboard |
+| `com.exascale.kalshi-weekly` | Mon 14:00 | metadata refresh → full structural suite → legacy edge health → dashboard |
 | `com.exascale.kalshi-shadow` | every 4h (02:20…22:20) | shadow book fill check → dashboard |
 
 Install: `cp ops/*.plist ~/Library/LaunchAgents/ && launchctl load ~/Library/LaunchAgents/com.exascale.kalshi-*.plist`
 
 ## Standing rules
 
-- No new cell is deployment-qualified. Existing live exposure remains an
+- No new cell is deployment-qualified. One cell is historically qualified for
+  shadow validation only. Existing live exposure remains an
   operator decision; UNSWEPT is untouchable and RED rulebooks never trade.
 - Sizing: $250/position Politics, ×½ per AMBER cell light, ×½ per YELLOW
   rulebook, one position per event.

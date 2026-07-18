@@ -18,7 +18,7 @@ import polars as pl
 
 from .screens import cell_stats
 
-from ..core.paths import MARKETS, TRADES, RESEARCH as REPORTS_DIR
+from ..core.paths import MARKET_METADATA, MARKETS, TRADES, RESEARCH as REPORTS_DIR
 DISCOVERY_END = "2025-07-01"
 
 
@@ -96,9 +96,18 @@ def load() -> pl.DataFrame:
         .select("ticker", "event_ticker", "category", "fee_type", "result", "end_time")
         .collect()
     )
+    if MARKET_METADATA.exists() and any(MARKET_METADATA.glob("*.parquet")):
+        settled = pl.read_parquet(MARKET_METADATA / "*.parquet").select(
+            "ticker",
+            pl.col("settled_time").cast(pl.String).str.to_datetime(time_zone="UTC", strict=False)
+            .alias("actual_settled_time"),
+        ).unique("ticker", keep="first")
+        markets = markets.join(settled, on="ticker", how="left").with_columns(
+            pl.coalesce("actual_settled_time", "end_time").alias("end_time")
+        ).drop("actual_settled_time")
     trades = (
         pl.scan_parquet(TRADES / "*.parquet")
-        .select("ticker", "created_time", "yes_price_cents", "taker_side")
+        .select("ticker", "created_time", "yes_price_cents", "taker_side", "count")
         .with_columns(pl.col("created_time").str.to_datetime(time_zone="UTC", strict=False))
         .collect()
     )

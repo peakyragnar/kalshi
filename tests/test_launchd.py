@@ -43,9 +43,8 @@ def test_recurring_launchd_chains_cover_recorder_shadow_and_edge_health():
         "kalshi_data.operations.dashboard",
     ]
     assert modules(command("com.exascale.kalshi-weekly.plist")) == [
-        "kalshi_data.analysis.corpus_audit",
-        "kalshi_data.analysis.research_panel",
-        "kalshi_data.analysis.atlas",
+        "kalshi_data.ingest.market_metadata",
+        "kalshi_data.analysis.full_suite",
         "kalshi_data.analysis.edge_health",
         "kalshi_data.operations.dashboard",
     ]

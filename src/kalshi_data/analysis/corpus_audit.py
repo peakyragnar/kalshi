@@ -7,7 +7,7 @@ import datetime as dt
 import polars as pl
 
 from .research_panel import normalize_market_times
-from ..core.paths import CORPUS_COVERAGE, MARKETS, RESEARCH, TRADES
+from ..core.paths import CORPUS_COVERAGE, MARKET_METADATA, MARKETS, RESEARCH, TRADES
 
 
 def audit_corpus(
@@ -87,6 +87,16 @@ def _markdown(summary: dict, coverage: pl.DataFrame) -> str:
 
 def run() -> None:
     markets = pl.read_parquet(MARKETS / "*.parquet")
+    if MARKET_METADATA.exists() and any(MARKET_METADATA.glob("*.parquet")):
+        settlement = pl.read_parquet(MARKET_METADATA / "*.parquet").select(
+            "ticker", pl.col("settled_time").alias("metadata_settled_time")
+        ).unique("ticker", keep="first")
+        markets = markets.join(settlement, on="ticker", how="left").with_columns(
+            pl.coalesce(
+                pl.col("settled_time").cast(pl.String),
+                pl.col("metadata_settled_time").cast(pl.String),
+            ).alias("settled_time")
+        ).drop("metadata_settled_time")
     trades = pl.read_parquet(TRADES / "*.parquet", columns=["ticker", "trade_id"])
     summary, coverage = audit_corpus(markets, trades)
     CORPUS_COVERAGE.parent.mkdir(parents=True, exist_ok=True)

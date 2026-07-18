@@ -2,6 +2,32 @@
   "version": 1,
   "sealed_at": "2026-07-18T05:34:27Z",
   "retrospective": true,
+  "audit_amendments": [
+    {
+      "at": "2026-07-18T05:45:11Z",
+      "reason": "the first dry run showed conditional labels could inherit the unconditional low-price return",
+      "change": "path, flow, activity, staleness, series, calendar, early-close, event-structure, and settlement-source cells must now clear both the 7% absolute gate and a matched category x decision-label x price-bucket x side uplift lower bound above zero",
+      "result_status": "all dry-run survivor labels invalidated before interpretation or preservation as findings"
+    },
+    {
+      "at": "2026-07-18T05:47:56Z",
+      "reason": "path audit found identical T-1d and T-6h observations could be the same stale trade",
+      "change": "path tests require a new trade after the earlier decision timestamp",
+      "result_status": "stale-path dry-run survivors invalidated before promotion"
+    },
+    {
+      "at": "2026-07-18T05:51:39Z",
+      "reason": "audit found unsupported zero-variance cells could receive p-values near zero and artificially improve Benjamini-Hochberg ranks for supported candidates",
+      "change": "three-fold event support is now enforced before search correction; unsupported registered cells remain in the multiplicity count with search p equal to one",
+      "result_status": "all provisional family and suite q-values invalidated before interpretation"
+    },
+    {
+      "at": "2026-07-18T06:01:28Z",
+      "reason": "scope reconciliation against the previously approved build plan found that related-contract lead-lag was promised but absent from the executable registry",
+      "change": "added a sibling lead-lag family using the mean move of other contracts in the same event, explicitly excluding the target contract's own move",
+      "result_status": "registered before this family was executed; complete-suite FDR will be recomputed"
+    }
+  ],
   "objective": "search distinct market mechanisms rather than variations of the term-premium thesis",
   "common_contract": {
     "universe": "deployment markets; sports, parlays, and crypto excluded",
@@ -53,6 +79,17 @@
       "status": "registered",
       "data_claim": "calibration",
       "dimensions": {"decision_labels": ["T-1d", "T-3d", "T-7d", "T-30d"], "minimum_24h_volume": 25, "yes_taker_share_bins": [[0.0, 0.2], [0.2, 0.4], [0.4, 0.6], [0.6, 0.8], [0.8, 1.000001]]}
+    },
+    {
+      "id": "sibling-lead-lag",
+      "mechanism": "price changes in other contracts within the same event may reveal information before the target contract incorporates it",
+      "status": "registered",
+      "data_claim": "calibration",
+      "dimensions": {
+        "label_pairs": [["T-7d", "T-1d"], ["T-3d", "T-1d"]],
+        "sibling_move_bins_cents": [[-100, -10], [-9, -3], [-2, 2], [3, 9], [10, 100]],
+        "target_excluded_from_signal": true
+      }
     },
     {
       "id": "recent-activity",
@@ -130,6 +167,13 @@
       "status": "registered_metadata_required",
       "data_claim": "calibration",
       "dimensions": {"decision_labels": ["T-7d", "T-30d", "T-90d"], "classes": ["numeric_objective", "official_act", "judgment_or_attribution", "unclassified"]}
+    },
+    {
+      "id": "event-probability-coherence",
+      "mechanism": "mutually exclusive and exhaustive event contracts can have observed prices that sum materially above or below one dollar",
+      "status": "registered_metadata_required",
+      "data_claim": "multi-leg calibration; execution requires every live leg",
+      "dimensions": {"decision_labels": ["T-1d", "T-7d", "T-30d"], "minimum_dislocation_cents": 2, "classification": "shared candidate-style title, distinct subtitles, no numeric strikes"}
     }
   ]
 }

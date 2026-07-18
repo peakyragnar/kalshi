@@ -1,10 +1,10 @@
 # Corpus audit
 
-Generated: 2026-07-17T22:07:14.362688+00:00
+Generated: 2026-07-18T07:24:21.062868+00:00
 
 ## Integrity verdict
 
-**CONDITIONAL.** Finalized close time provides the historical trading boundary, but actual settlement time is missing for **2,733,070** markets. A decision point is therefore anchored to close time; settlement time is used for carry only where it is present.
+**CONDITIONAL.** Finalized close time provides the historical trading boundary, but actual settlement time is missing for **68** markets. A decision point is therefore anchored to close time; settlement time is used for carry only where it is present.
 
 Historical order books remain unavailable; calibration and fill-conditioned execution claims are kept separate. Voided/cancelled markets are absent from the settled-only backfill and must be captured prospectively.
 
@@ -15,9 +15,9 @@ Historical order books remain unavailable; calibration and fill-conditioned exec
 - `series`: 3,579
 - `trade_rows`: 47,342,026
 - `markets_with_tape`: 380,660
-- `markets_missing_settled_time`: 2,733,070
+- `markets_missing_settled_time`: 68
 - `result_markets_with_future_scheduled_end`: 1
-- `early_close_markets_without_resolution_time`: 2,729,858
+- `early_close_markets_without_resolution_time`: 68
 - `traded_sub_6d_markets`: 332,515
 - `traded_sub_6d_markets_with_tape`: 332,515
 
