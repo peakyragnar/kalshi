@@ -44,6 +44,12 @@ EDGE_HISTORY = STATE / "edge_health_history.jsonl"
 
 TAIL_SIGNALS = STATE / "tail_signals.json"
 FEATURES = CAPTURE / "external_features"
+EXTERNAL_RAW = RAW / "external"
+WEATHER_FORECASTS = EXTERNAL_RAW / "weather-gfs-previous-runs.parquet"
+WEATHER_OBSERVATIONS = EXTERNAL_RAW / "weather-ncei-daily-summaries.parquet"
+WEATHER_PANEL = DERIVED / "weather_alpha_panel.parquet"
+WEATHER_RESULTS = DERIVED / "weather_alpha_results.parquet"
+WEATHER_PERIODS = DERIVED / "weather_alpha_periods.parquet"
 
 OPS = ROOT / "ops"
 RULEBOOK_VERDICTS = OPS / "rulebook-verdicts.json"

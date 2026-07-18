@@ -1,0 +1,91 @@
+{
+  "version": 1,
+  "sealed_at": "2026-07-18T12:25:00Z",
+  "retrospective": true,
+  "objective": "test whether point-in-time NOAA GFS temperature forecasts add net return information beyond contemporaneous Kalshi prices",
+  "source_contract": {
+    "forecast_origin": "NOAA NCEP GFS global operational model",
+    "forecast_access": "Open-Meteo Previous Runs API fixed-lead archive",
+    "observations": "NOAA NCEI Daily Summaries at the settlement station",
+    "availability": "daily forecast is usable only after every hourly value in its local target day is published, with a conservative six-hour model lag",
+    "calibration": "expanding settlement-station forecast errors by high/low and lead; only observations whose assumed availability precedes the forecast feature are used",
+    "entry": "historical last print plus a two-cent spread reserve and taker fee; calibration proxy, not a fill claim",
+    "uncertainty_reserve_probability_points": 2.0,
+    "benchmark": "matched period x decision label x high/low x side x entry-price bucket market-only return",
+    "outcome": "hold to Kalshi settlement",
+    "deployment": "historical qualification permits shadow monitoring only"
+  },
+  "gate": {
+    "minimum_events_per_fold": 50,
+    "annual_hurdle": 0.07,
+    "minimum_hold_return": 0.0,
+    "error_multiplier": 2.0,
+    "family_fdr": 0.05,
+    "combined_suite_fdr": 0.05
+  },
+  "families": [
+    {
+      "id": "weather-level-disagreement",
+      "mechanism": "the calibrated forecast distribution differs from the executable market probability",
+      "dimensions": {
+        "decision_labels": ["T-6h", "T-1d"],
+        "minimum_net_edges_cents": [0, 3, 5, 10],
+        "weather_stats": ["high", "low"],
+        "sides": ["yes", "no"]
+      }
+    },
+    {
+      "id": "weather-city-disagreement",
+      "mechanism": "forecast-market disagreement varies by settlement station",
+      "fixed_minimum_net_edge_cents": 5,
+      "dimensions": {
+        "decision_labels": ["T-6h", "T-1d"],
+        "weather_stats": ["high", "low"],
+        "sides": ["yes", "no"]
+      }
+    },
+    {
+      "id": "weather-price-disagreement",
+      "mechanism": "forecast information is incorporated differently across contract price regimes",
+      "fixed_minimum_net_edge_cents": 5,
+      "dimensions": {
+        "decision_labels": ["T-6h", "T-1d"],
+        "entry_price_buckets": ["01-20", "21-40", "41-60", "61-80", "81-99"],
+        "weather_stats": ["high", "low"],
+        "sides": ["yes", "no"]
+      }
+    },
+    {
+      "id": "weather-staleness-disagreement",
+      "mechanism": "public forecast information is incorporated more slowly when the last market print is stale",
+      "fixed_minimum_net_edge_cents": 5,
+      "dimensions": {
+        "decision_labels": ["T-6h", "T-1d"],
+        "staleness_bins": ["fresh", "aging", "stale"],
+        "weather_stats": ["high", "low"],
+        "sides": ["yes", "no"]
+      }
+    },
+    {
+      "id": "weather-revision-underreaction",
+      "mechanism": "the market underreacts when the calibrated weather probability changes between registered horizons",
+      "fixed_minimum_net_edge_cents": 0,
+      "dimensions": {
+        "label_pairs": [["T-1d", "T-6h"]],
+        "minimum_residual_updates_pp": [3, 5, 10],
+        "weather_stats": ["high", "low"],
+        "sides": ["yes", "no"]
+      }
+    }
+  ],
+  "audit_amendments": [
+    {
+      "date": "2026-07-18",
+      "reason": "Feasibility dry run found that daily-temperature contracts are not listed at T-3d. Impossible T-3d level cells and T-3d-to-T-1d revision cells were removed before interpretation; the dry-run result was invalidated and recomputed."
+    },
+    {
+      "date": "2026-07-18",
+      "reason": "Forecast-versus-observation audit, without Kalshi outcomes, found persistent station bias. Expanding calibration was changed from pooled to settlement-station-specific; on the common out-of-sample forecast set RMSE improved from 4.88F to 4.73F. The dry-run result was invalidated and recomputed."
+    }
+  ]
+}

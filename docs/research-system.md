@@ -99,6 +99,19 @@ enough. The Senate watcher now writes confirmation signals to this store. The
 EDGAR adapter writes S-1/F-1 registration observations and deliberately labels
 an empty exact-name search `NO_MATCH`, not `CLEAR`.
 
+The first complete external-data suite covers daily high/low temperature
+contracts at 20 settlement stations. `features.weather` reconstructs fixed
+one-to-seven-day NOAA GFS runs through the Open-Meteo Previous Runs archive and
+downloads exact-station NOAA NCEI Daily Summaries. Expanding bias and uncertainty
+are estimated separately by station, high/low statistic, and lead using only
+observations available before each forecast. `analysis.weather_alpha` converts
+those distributions to contract probabilities and tests level, city, price,
+staleness, and forecast-revision mechanisms at feasible T−1d and T−6h entries.
+Each selected side pays a 2¢ spread reserve and taker fee, must beat a matched
+market-only baseline in all three folds, and enters both family and combined
+structural-plus-external FDR correction. A historical pass permits shadow
+monitoring only.
+
 ## Rebuild
 
 ```bash
@@ -111,6 +124,8 @@ uv run python -m kalshi_data.analysis.mechanism_suite
 uv run python -m kalshi_data.analysis.metadata_suite
 uv run python -m kalshi_data.analysis.survivor_audit
 uv run python -m kalshi_data.features.edgar
+uv run python -m kalshi_data.features.weather
+uv run python -m kalshi_data.analysis.weather_alpha
 ```
 
 Derived data stays gitignored. Registry, methodology, generated Markdown

@@ -28,6 +28,7 @@ deployment decisions belong to the operator.
 | `research/hypotheses.yaml` | pre-registered structural search space and gates |
 | `research/mechanism-suite-v1.yaml` | registered multi-mechanism search contract |
 | `research/systematic-alpha-results.md` | concise suite funnel, near misses, and rejected mechanisms |
+| `research/weather-alpha-results.md` | point-in-time GFS-versus-market probability suite and gates |
 | `src/kalshi_data/operations/` | candidate list, shadow book, dashboard |
 | `src/kalshi_data/watchers/` | external-data tail watchers (congressional calendar) |
 | `src/kalshi_data/features/` | point-in-time external feature store and EDGAR adapter |
@@ -59,6 +60,8 @@ uv run python -m kalshi_data.analysis.atlas          # registered structural sea
 uv run python -m kalshi_data.ingest.market_metadata  # titles, strikes, rules, actual settlement
 uv run python -m kalshi_data.analysis.full_suite     # rebuild every structural research artifact
 uv run python -m kalshi_data.features.edgar          # SEC registration observations for IPO candidates
+uv run python -m kalshi_data.features.weather        # GFS previous runs + exact-station NOAA observations
+uv run python -m kalshi_data.analysis.weather_alpha  # registered external-weather alpha suite
 ```
 
 Full rebuild from nothing: `ingest.series` → `ingest.markets --tier deployment`
@@ -73,7 +76,7 @@ and versioned RED rulebooks remain outside actionable research.
 |---|---|---|
 | `com.exascale.kalshi-recorder` | 06:10 / 12:10 / 18:10 / 23:50 | book depth snapshots |
 | `com.exascale.kalshi-daily` | 13:15 | incremental ingest → candidates → Senate/EDGAR observations → shadow/portfolio → dashboard |
-| `com.exascale.kalshi-weekly` | Mon 14:00 | catalog → market/tape/metadata backfill → full suite → legacy edge health → dashboard |
+| `com.exascale.kalshi-weekly` | Mon 14:00 | catalog → market/tape/metadata backfill → structural suite → weather ingest/suite → legacy edge health → dashboard |
 | `com.exascale.kalshi-shadow` | every 4h (02:20…22:20) | shadow book fill check → dashboard |
 
 Install: `cp ops/*.plist ~/Library/LaunchAgents/ && launchctl load ~/Library/LaunchAgents/com.exascale.kalshi-*.plist`

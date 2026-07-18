@@ -18,6 +18,9 @@ gitignored.
 | `derived/market_relations.parquet` | derived | 2,866,040 | event membership for linked-contract analysis |
 | `capture/books/` | 52MB | growing | capture-only live depth; recorder began 2026-07-15 |
 | `capture/external_features/` | growing | point-in-time observations | Senate and EDGAR data with availability timestamps |
+| `raw/external/weather-gfs-previous-runs.parquet` | <1MB | 133,798 | fixed-lead daily high/low GFS point forecasts for Kalshi settlement stations |
+| `raw/external/weather-ncei-daily-summaries.parquet` | <1MB | 19,254 | exact-station daily high/low observations used for point-in-time calibration |
+| `derived/weather_alpha_panel.parquet` | 23MB | 220,320 | costed YES/NO weather strategies joined as of each decision timestamp |
 
 The current deployment boundary contains 2,866,367 settled market tickers
 before the three versioned RED series are removed. See
@@ -75,7 +78,8 @@ time result of a changing search generally is not.
   shadow book, portfolio read, dashboard.
 - Four times daily: current order-book capture.
 - Weekly: series refresh, incremental historical backfill, metadata refresh,
-  complete structural suite, legacy-cell health diagnostics, dashboard.
+  complete structural suite, weather source refresh and external-alpha suite,
+  legacy-cell health diagnostics, dashboard.
 
 No websocket stream is needed for the current daily-entry, multi-day holding
 style. If an explicitly registered intraday hypothesis requires it, that would

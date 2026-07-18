@@ -109,6 +109,17 @@ therefore has **zero historical qualifiers**, and the execution audit is
 suppressed rather than continuing to label the old cell a survivor.
 *(Multi-mechanism suite v1; Survivor execution audit)*
 
+### F11. The first external-data suite finds no GFS weather edge
+The point-in-time weather panel contains 220,320 costed YES/NO strategy rows
+across 9,784 events, 56,370 contracts, and 20 exact settlement stations. The
+registered suite tested 268 level, city, price, staleness, and revision cells.
+None passed the economic and matched-baseline gate in all three folds, and none
+survived family or combined structural-plus-external FDR. Kalshi prices also
+beat the station-calibrated GFS probability model on Brier score at T−1d
+(0.112 versus 0.148) and T−6h (0.021 versus 0.140). This rejects the current
+GFS-only specification; it does not reject all weather data or future ensembles.
+*(Weather external-alpha suite v1)*
+
 ---
 
 ## Part 2 — Current deployment interpretation (not an automatic instruction)
@@ -172,6 +183,7 @@ rates collapsing. All three are tracked automatically (below).
 | Multi-mechanism suite v1 (`research/mechanism-suite.md`) | **ZERO HISTORICAL QUALIFIERS** | 55,236 cells across 15 statistical families; six three-fold passes, one family-FDR pass, zero full-suite passes. | Do not preserve the old path cell as a survivor; new mechanisms require registration or point-in-time external data. |
 | Metadata structure (`research/metadata-suite.md`) | **DESCRIPTIVE ONLY** | 46,254 adjacent ladder pairs and 125 complete exclusive-event observations; synchronous-price coverage is sparse. | Use live books to test simultaneous leg execution; do not label asynchronous last-print gaps arbitrage. |
 | Flow-shock overshoot (`research/flow_shock.md`) | **RED** | Corrected timing: 3,217 shocks, median seven-day YES change −3¢ in both periods. Discovery reversion, absolute return, and uplift all fail the 2SE gate. | Do not add a pooled post-shock entry rule. |
+| Weather GFS external alpha (`research/weather-alpha-results.md`) | **ZERO QUALIFIERS** | 268 registered cells; zero three-fold passes. Market Brier error is lower than the calibrated GFS model at T−1d and T−6h. | Keep the unchanged weekly monitor; do not create a GFS-only shadow or live rule. |
 
 ## Change log
 - 2026-07-16: created after Screens A, B, D. Screen C production scan and the
@@ -228,3 +240,8 @@ rates collapsing. All three are tracked automatically (below).
   suite-wide gate. The prior near-flat path label is withdrawn because its
   weakest matched-baseline lower bound is negative. Ladder and event-sum scans
   remain descriptive because historical last prints are asynchronous.
+- 2026-07-18: Completed the first point-in-time external-data suite. Backfilled
+  fixed-lead GFS forecasts and exact-station NOAA observations for 20 weather
+  stations, tested 268 registered cells across five mechanisms, and found zero
+  three-fold or FDR survivor. The weekly job now refreshes and reruns the sealed
+  weather test automatically; no deployment rule was added.

@@ -48,6 +48,8 @@ def test_recurring_launchd_chains_cover_recorder_shadow_and_edge_health():
         "kalshi_data.ingest.trades",
         "kalshi_data.ingest.market_metadata",
         "kalshi_data.analysis.full_suite",
+        "kalshi_data.features.weather",
+        "kalshi_data.analysis.weather_alpha",
         "kalshi_data.analysis.edge_health",
         "kalshi_data.operations.dashboard",
     ]
