@@ -1,4 +1,4 @@
-# EDGAR IPO features — 2026-07-17
+# EDGAR IPO features — 2026-07-18
 
 - **FILED:S-1/A** KXDATABRICKS-DATE-26NOV01 — Databricks; form S-1/A; file 333-295145; filed 2026-05-11; https://www.sec.gov
 - **FILED:S-1/A** KXDATABRICKS-DATE-26OCT01 — Databricks; form S-1/A; file 333-295145; filed 2026-05-11; https://www.sec.gov

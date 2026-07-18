@@ -78,6 +78,7 @@ and versioned RED rulebooks remain outside actionable research.
 | `com.exascale.kalshi-daily` | 13:15 | incremental ingest → candidates → Senate/EDGAR observations → shadow/portfolio → dashboard |
 | `com.exascale.kalshi-weekly` | Mon 14:00 | catalog → market/tape/metadata backfill → structural suite → weather ingest/suite → legacy edge health → dashboard |
 | `com.exascale.kalshi-shadow` | every 4h (02:20…22:20) | shadow book fill check → dashboard |
+| `com.exascale.kalshi-nearclose` | hourly | book snapshots for markets closing within 36h (final-hours capture) |
 
 Install: `cp ops/*.plist ~/Library/LaunchAgents/ && launchctl load ~/Library/LaunchAgents/com.exascale.kalshi-*.plist`
 

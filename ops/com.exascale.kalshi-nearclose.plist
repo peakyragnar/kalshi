@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.exascale.kalshi-nearclose</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/opt/homebrew/bin/uv</string>
+        <string>run</string>
+        <string>--directory</string>
+        <string>/Users/michael/Kalshi</string>
+        <string>python</string>
+        <string>-m</string>
+        <string>kalshi_data.ingest.recorder</string>
+        <string>--near-close</string>
+        <string>36</string>
+    </array>
+    <key>StartInterval</key>
+    <integer>3600</integer>
+    <key>StandardOutPath</key>
+    <string>/Users/michael/Kalshi/logs/recorder_nearclose.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/michael/Kalshi/logs/recorder_nearclose.log</string>
+    <key>RunAtLoad</key>
+    <false/>
+</dict>
+</plist>

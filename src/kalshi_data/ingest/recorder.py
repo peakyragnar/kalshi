@@ -28,20 +28,41 @@ def _utc_now() -> dt.datetime:
     return dt.datetime.now(dt.timezone.utc)
 
 
-def open_deployment_markets(client: KalshiClient) -> list[str]:
+def open_deployment_markets(client: KalshiClient) -> dict[str, str | None]:
+    """Open deployment-tier tickers -> close_time (ISO string or None), cached daily."""
     today = _utc_now().date().isoformat()
     if CACHE.exists():
         cache = json.loads(CACHE.read_text())
-        if cache.get("date") == today:
-            return cache["tickers"]
+        if cache.get("date") == today and "markets" in cache:
+            return cache["markets"]
     series = pl.read_parquet(SERIES).filter(pl.col("tier") == "deployment")
-    tickers: list[str] = []
+    markets: dict[str, str | None] = {}
     for s in series.iter_rows(named=True):
         for page in client.paginate("/markets", "markets", status="open", series_ticker=s["ticker"]):
-            tickers.extend(m["ticker"] for m in page if m.get("ticker"))
+            for m in page:
+                if m.get("ticker"):
+                    markets[m["ticker"]] = m.get("close_time")
     BOOKS_DIR.mkdir(parents=True, exist_ok=True)
-    CACHE.write_text(json.dumps({"date": today, "tickers": tickers}))
-    return tickers
+    CACHE.write_text(json.dumps({"date": today, "markets": markets}))
+    return markets
+
+
+def near_close(markets: dict[str, str | None], hours: float, now: dt.datetime | None = None) -> list[str]:
+    """Tickers closing within `hours` — the final-hours capture window
+    (03-information-edge-plan.md Track B: fill-rate gate + decay early warning)."""
+    now = now or _utc_now()
+    horizon = now + dt.timedelta(hours=hours)
+    out = []
+    for ticker, close in markets.items():
+        if not close:
+            continue
+        try:
+            close_at = dt.datetime.fromisoformat(close.replace("Z", "+00:00"))
+        except ValueError:
+            continue
+        if now < close_at <= horizon:
+            out.append(ticker)
+    return out
 
 
 def top_levels(book: dict, side: str) -> list[list[str]]:
@@ -49,9 +70,10 @@ def top_levels(book: dict, side: str) -> list[list[str]]:
     return levels[-LEVELS:] if levels else []
 
 
-def run_once(limit: int | None = None, rps: float = 8.0) -> None:
+def run_once(limit: int | None = None, rps: float = 8.0, near_close_hours: float | None = None) -> None:
     client = KalshiClient(rps=rps)
-    tickers = open_deployment_markets(client)
+    markets = open_deployment_markets(client)
+    tickers = near_close(markets, near_close_hours) if near_close_hours else list(markets)
     if limit:
         tickers = tickers[:limit]
     BOOKS_DIR.mkdir(parents=True, exist_ok=True)
@@ -80,5 +102,7 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--rps", type=float, default=8.0)
+    ap.add_argument("--near-close", type=float, default=None, metavar="HOURS",
+                    help="restrict to markets closing within HOURS (final-hours capture)")
     args = ap.parse_args()
-    run_once(limit=args.limit, rps=args.rps)
+    run_once(limit=args.limit, rps=args.rps, near_close_hours=args.near_close)
