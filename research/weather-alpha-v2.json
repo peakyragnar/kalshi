@@ -1,0 +1,56 @@
+{
+  "version": 2,
+  "registered_at": "2026-07-18T00:00:00Z",
+  "predecessor": "weather-alpha-v1.json",
+  "contract_source": "research/weather-alpha-v1-review.md section 4",
+  "change_log": [
+    {
+      "at": "2026-07-18T00:00:00Z",
+      "reason": "v1 negative was overdetermined: taker-only economics and no intraday state at T-6h; post-hoc diagnostic showed raw model ranking separates market-identical tails 3x monotonically",
+      "change": "maker-channel economics primary; out-of-fold recalibration of probability levels; intraday running max/min features at T-6h; tail-focused registered families with matched baselines; pre-committed kill condition",
+      "result_status": "registered before any v2 execution"
+    },
+    {
+      "at": "2026-07-18T00:00:00Z",
+      "reason": "v2.0 run: early-fold-only calibration fit starves the calibrator - the lowest bin floors at Jeffreys 0.5/(n+1) ~ 1.6%, making sub-1% thresholds structurally unreachable (3 of 5 ladder rungs empty; favorite cells unsupported at 3 events). The two reachable bands did separate monotonically out-of-fold (0.52% vs 1.31% realized)",
+      "change": "walk-forward calibration: each evaluation fold's calibrated probabilities are fitted only on strictly earlier folds (middle fits on early; recent fits on early+middle); early remains in-fit and is excluded from the kill condition as before. No thresholds, bins, families, or gates changed",
+      "result_status": "amendment registered after observing v2.0's empty rungs and before any v2.1 execution; v2.0 artifacts retained in git history"
+    }
+  ],
+  "common_contract": {
+    "execution": "maker: rest at last print, maker fee only (quadratic series), hold to settlement; taker variant reported as robustness column, never a gate",
+    "carry_apy": 0.0325,
+    "economic_hurdle": 0.07,
+    "error_multiplier": 2.0,
+    "cluster_by": "event_ticker",
+    "day_cluster_robustness": "reported alongside for every candidate cell",
+    "minimum_events_per_fold": 50,
+    "folds": {"early_end": "2024-01-01", "middle_end": "2025-07-01", "sealed_forward_start": "2026-07-17"},
+    "calibration": "monotone bin recalibration of model_probability_yes fitted on the early (discovery) fold only, applied out-of-fold to middle and recent; bins and smoothing fixed in code before the first v2 run",
+    "intraday": "T-6h decisions additionally condition on point-in-time running daily max/min from hourly station observations (NCEI global-hourly backfill; availability = observation time + 1h transmission allowance)",
+    "search_control": "family FDR then combined correction with the structural mechanism suite; unsupported cells enter with p=1"
+  },
+  "families": [
+    {
+      "id": "tail-veto-no",
+      "hypothesis": "resting NO on <=5c YES tails where the calibrated model probability is below threshold beats resting NO on all such tails",
+      "dimensions": {
+        "decision_labels": ["T-1d", "T-6h"],
+        "calibrated_probability_thresholds": [0.002, 0.005, 0.01, 0.02],
+        "side": "no"
+      },
+      "baseline": "matched market-only baseline: all <=5c tails at the same decision label and fold; the model condition must add incremental return with positive 2-SE lower bound in every fold"
+    },
+    {
+      "id": "favorite-fragility-no",
+      "hypothesis": "resting NO at 96-99c YES (buying the 1-4c NO tail) where the calibrated model doubts the favorite by a registered margin beats doing so indiscriminately",
+      "dimensions": {
+        "decision_labels": ["T-1d", "T-6h"],
+        "model_doubt_margins": [0.02, 0.05, 0.1],
+        "side": "no"
+      },
+      "baseline": "matched market-only baseline: all 96-99c favorites at the same decision label and fold; incremental gate as above"
+    }
+  ],
+  "kill_condition": "if the calibrated model shows no monotone out-of-fold separation of realized tail rates across the registered threshold ladder (middle and recent folds), weather modeling closes and the atlas #2 target (CPI/ALFRED) moves up"
+}
