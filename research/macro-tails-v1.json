@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "registered_at": "2026-07-18T00:00:00Z",
+  "program": "macro-tails",
+  "context": "atlas #2 target promoted by the weather kill (weather-alpha-v2-verdict.md). Structural advantages over weather: the settlement variable is embargoed until release (no intraday-realization handicap - the T-1d information field is flat), and ALFRED vintages + archived nowcasts give legitimate point-in-time backtesting. Power verified before registration: pooled tail-zone release events per fold = 73/85/93 (early/middle/recent), above the 50-event floor.",
+  "universe": {
+    "families": ["KXCPI", "KXCPIYOY", "KXECONSTATCPI", "KXECONSTATCPIYOY", "KXECONSTATCORECPIYOY", "KXECONSTATCPICORE", "KXPAYROLLS", "KXU3", "KXGDP", "KXPCE", "KXPCECORE", "KXUSGASCPI", "KXJOBLESS", "KXFEDFUNDS"],
+    "note": "pooled: a release print is ONE event regardless of bracket count; no single release type clears the floor alone and none is claimed alone"
+  },
+  "data_plan": {
+    "vintages": "ALFRED point-in-time vintages for each settlement series (free API key required - operator action)",
+    "nowcasts": "Cleveland Fed inflation nowcast archive (public history) for CPI/PCE; SPF/consensus where point-in-time archives exist; a nowcast enters the model only with a documented as-of timestamp",
+    "calendar": "official release calendars (BLS/BEA), archived",
+    "rule": "point-in-time or it does not count; capture forward from adoption for anything without an archive"
+  },
+  "model_v0": "per release type: anchor = latest point-in-time nowcast (or vintage-implied trailing value where no nowcast exists); distribution = anchor plus the walk-forward empirical distribution of anchor-vs-print errors for that release type; bracket probabilities read off that distribution. No fitted parameters beyond the error history itself",
+  "families": [
+    {
+      "id": "macro-tail-veto-no",
+      "hypothesis": "resting NO on <=5c YES macro brackets where the model tail probability is below threshold beats resting NO on all such brackets",
+      "thresholds": [0.002, 0.005, 0.01, 0.02]
+    },
+    {
+      "id": "macro-favorite-fragility-no",
+      "hypothesis": "resting NO at 96-99c where the model doubts the favorite bracket by a registered margin beats doing so indiscriminately",
+      "margins": [0.02, 0.05, 0.1]
+    }
+  ],
+  "gates": "identical to weather-alpha-v2: maker economics primary, taker as robustness column; three chronological folds (same boundaries), >=50 independent release events per fold, mean minus two release-clustered SEs above 7 percent with carry, matched market-only baselines with positive incremental lower bound every fold, family FDR then combined suite FDR, day-cluster robustness reported",
+  "calibration": "walk-forward per release type (middle fits on early, recent fits on early+middle), pre-committed bins as in weather-alpha-v2; early in-fit and excluded from the kill condition",
+  "kill_condition": "if the calibrated model shows no monotone out-of-fold separation of realized tail rates across the threshold ladder (middle+recent), macro modeling closes; the program then has no model lane and the week-10 checkpoint proceeds on the structural forward test alone",
+  "amendment_cap": "one structural amendment maximum after first execution, change-logged; a second failure is a verdict, not a bug (weather lesson)"
+}
