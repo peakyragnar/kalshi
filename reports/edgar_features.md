@@ -1,4 +1,4 @@
-# EDGAR IPO features — 2026-07-18
+# EDGAR IPO features — 2026-07-19
 
 - **FILED:S-1/A** KXDATABRICKS-DATE-26NOV01 — Databricks; form S-1/A; file 333-295145; filed 2026-05-11; https://www.sec.gov
 - **FILED:S-1/A** KXDATABRICKS-DATE-26OCT01 — Databricks; form S-1/A; file 333-295145; filed 2026-05-11; https://www.sec.gov
@@ -32,6 +32,7 @@
 - **FILED:S-1/A** KXIPOSTARLINK-26NOV01 — Starlink; form S-1/A; file 333-296070; filed 2026-06-03; https://www.sec.gov
 - **FILED:S-1/A** KXIPOSTARLINK-26OCT01 — Starlink; form S-1/A; file 333-296070; filed 2026-06-03; https://www.sec.gov
 - **FILED:S-1/A** KXIPOWHOOP-26OCT01 — WHOOP, Inc.; form S-1/A; file 333-279486; filed 2024-06-03; https://www.sec.gov
+- **FILED:S-1/A** KXSTRIPEIPO-26NOV01 — Stripe; form S-1/A; file 333-296437; filed 2026-07-14; https://www.sec.gov
 - **FILED:S-1/A** KXSTRIPEIPO-26OCT01 — Stripe; form S-1/A; file 333-296437; filed 2026-07-14; https://www.sec.gov
 - **FILED:F-1/A** KXWAYMO-DATE-26NOV01 — Waymo; form F-1/A; file 333-294081; filed 2026-04-27; https://www.sec.gov
 - **FILED:F-1/A** KXWAYMO-DATE-26OCT01 — Waymo; form F-1/A; file 333-294081; filed 2026-04-27; https://www.sec.gov
